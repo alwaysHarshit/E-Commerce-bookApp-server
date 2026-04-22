@@ -1,1 +1,7 @@
 .idea
+Auth-Service/
+.mvn/
+target/
+mvnw
+mvnw.cmd
+application.yaml
