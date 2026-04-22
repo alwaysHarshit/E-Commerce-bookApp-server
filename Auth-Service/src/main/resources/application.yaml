@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: Auth-Service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/ecommerce
+    username: root
+    password: 2118211
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: studyharshit21@gmail.com
+    password: zofl xrze sgjw kyci
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: Ov23liBvkDCG8IgmTIkO
+            client-secret: 3e86b7b40cc04752d2da848fe874a8cec6a3e79c
+
+logging:
+  level:
+    root: error
+    org.booknest: debug

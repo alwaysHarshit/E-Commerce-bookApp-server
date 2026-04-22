@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: auth-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      MAIL_USERNAME: studyharshit21@gmail.com
+      MAIL_PASSWORD: zofl xrze sgjw kyci
+
+      GITHUB_CLIENT_ID: Ov23liBvkDCG8IgmTIkO
+      GITHUB_CLIENT_SECRET: 3e86b7b40cc04752d2da848fe874a8cec6a3e79c
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_DATABASE: ecommerce
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
