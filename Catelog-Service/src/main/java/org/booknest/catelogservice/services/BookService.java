@@ -3,6 +3,7 @@ package org.booknest.catelogservice.services;
 import lombok.extern.slf4j.Slf4j;
 import org.booknest.catelogservice.dto.BookRequestDTO;
 import org.booknest.catelogservice.entity.Book;
+import org.booknest.catelogservice.model.UserBookResponse;
 import org.booknest.catelogservice.repo.BookRepo;
 import org.booknest.catelogservice.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -69,5 +71,30 @@ public class BookService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to add book");
         }
+    }
+
+    public List<UserBookResponse> getAllBooks() {
+        log.info("getAllBooks request");
+        List<Book> books = bookRepo.findAll();
+
+        // Mapping these all db books to user response books
+        List<UserBookResponse> bookResponseList = new ArrayList<>();
+
+        for (Book book : books) {
+            UserBookResponse userBookResponse = UserBookResponse.builder()
+                    .title(book.getTitle())
+                    .author(book.getAuthor())
+                    .isbn(book.getIsbn())
+                    .genre(book.getGenre())
+                    .publisher(book.getPublisher())
+                    .price(book.getPrice())
+                    .description(book.getDescription())
+                    .coverImageUrl(book.getCoverImageUrl())
+                    .publishedDate(book.getPublishedDate())
+                    .build();
+
+            bookResponseList.add(userBookResponse);
+        }
+        return bookResponseList;
     }
 }
