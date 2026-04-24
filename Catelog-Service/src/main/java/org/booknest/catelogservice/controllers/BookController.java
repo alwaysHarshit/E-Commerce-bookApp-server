@@ -8,13 +8,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/book")
+@RequestMapping("/admin")
 public class BookController {
     @Autowired
     private BookService bookService;
 
     //adding the new book
-    @PostMapping(value = "/add-book",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/books",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseEntity<String>> addBook(@ModelAttribute BookRequestDTO bookRequestDTO) {
         ResponseEntity<String> stringResponseEntity = bookService.addBook(bookRequestDTO);
         return ResponseEntity.ok(stringResponseEntity);

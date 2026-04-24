@@ -23,6 +23,7 @@ public class BookRequestDTO {
     private String genre;
     private double price;
     private int stocks;
+    private double rating;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  // ← add this
     private LocalDate publishedDate;
