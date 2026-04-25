@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,7 +29,6 @@ public class BookService {
     /****************** Admin methods ***************************/
 
     public void addBook(BookRequestDTO bookRequestDTO) {
-        log.info("addBook request {}", bookRequestDTO);
 
         String awsImageUrl;
 
@@ -68,8 +66,6 @@ public class BookService {
 
     public void updateBook(BookRequestDTO dto, String id) {
 
-        log.info("updateBook request {}", dto);
-
         //get that book from db
         Book book = bookRepo.findBookById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book with id: " + id + " not found"));
@@ -105,8 +101,6 @@ public class BookService {
             book.setPublishedDate(dto.getPublishedDate());
         }
         bookRepo.save(book);
-
-        log.info("Successfully updated book");
     }
 
     public void deleteBook(String id) {
@@ -120,40 +114,37 @@ public class BookService {
             }
             // 2. Delete from DB
             bookRepo.delete(book);
-            log.info("Successfully delete book");
-
     }
 
 
     /****************** public  methods ***************************/
     public List<UserBookResponse> getAllBooks() {
-        log.info("getAllBooks request");
         List<Book> books = bookRepo.findAll();
-        return books.stream().map(this::mapToResponse).collect(Collectors.toList());
+        return books.stream().map(this::mapToResponse).toList();
     }
 
     public List<UserBookResponse> searchByTitle(String title) {
         return bookRepo.findByTitleContainingIgnoreCase(title).stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<UserBookResponse> searchByAuthor(String author) {
         return bookRepo.findByAuthorContainingIgnoreCase(author).stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<UserBookResponse> filterByGenre(String genre) {
         return bookRepo.findByGenreIgnoreCase(genre).stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<UserBookResponse> searchByKeyword(String keyword) {
         return bookRepo.searchByKeyword(keyword).stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public UserBookResponse getBookById(String id) {
@@ -178,4 +169,3 @@ public class BookService {
                 .build();
     }
 }
-
