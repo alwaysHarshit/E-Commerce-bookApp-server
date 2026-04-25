@@ -7,11 +7,8 @@ import org.booknest.auth.model.LoginRequest;
 import org.booknest.auth.model.LoginResponse;
 import org.booknest.auth.model.RegisterRequest;
 import org.booknest.auth.services.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -22,8 +19,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest loginRequest) {
@@ -34,27 +34,28 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Void>> register(@RequestBody RegisterRequest registerRequest){
-         log.info("Registration request received for user: {}", registerRequest.getEmail());
-         authService.register(registerRequest, Role.USER);
-         return ResponseEntity.ok(ApiResponse.success("Otp Sent successfully", null));
+    public ResponseEntity<ApiResponse<Void>> register(@RequestBody RegisterRequest registerRequest) {
+        log.info("Registration request received for user: {}", registerRequest.getEmail());
+        authService.register(registerRequest, Role.USER);
+        return ResponseEntity.ok(ApiResponse.success("Otp Sent successfully", null));
     }
+
     @PostMapping("/admin/register")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> registerAdmin(@RequestBody RegisterRequest registerRequest) {
-        log.info("Registration request received for user: {}", registerRequest.getEmail());
+        log.info("Registration Admin request received for user: {}", registerRequest.getEmail());
         authService.register(registerRequest, Role.ADMIN);
         return ResponseEntity.ok(ApiResponse.success("Otp Sent successfully", null));
     }
 
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestParam("otp") String otp ,@RequestParam("email") String email){
+    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestParam("otp") String otp, @RequestParam("email") String email) {
         log.info("OTP verification request received for user: {}", email);
         authService.verifyOtp(otp, email);
         return ResponseEntity.ok(ApiResponse.success("Otp verified successfully", null));
     }
-    
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserDetails>> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
         log.info("Fetching profile for user: {}", userDetails != null ? userDetails.getUsername() : "null");
