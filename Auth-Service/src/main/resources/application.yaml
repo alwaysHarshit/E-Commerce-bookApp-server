@@ -32,6 +32,14 @@ spring:
             client-id: Ov23liBvkDCG8IgmTIkO
             client-secret: 3e86b7b40cc04752d2da848fe874a8cec6a3e79c
 
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://service-registry:8085/eureka
+
 logging:
   level:
     root: error
