@@ -31,6 +31,8 @@ public class Book {
     private int stock;
     private double rating;
     private String description;
+
     private String coverImageUrl;
+    private String coverImageKey;
     private LocalDate publishedDate;
 }

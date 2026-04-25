@@ -15,6 +15,7 @@ public class S3Config {
     private final AwsProperties awsProperties;
 
     public S3Config(AwsProperties awsProperties) {
+
         this.awsProperties = awsProperties;
     }
 
