@@ -1,0 +1,12 @@
+version: '1.0'
+
+services:
+  app:
+    build: .
+    image: service-registry:1.0
+    container_name: service-registry
+    ports:
+      - "8085:8085"
+
+    restart: on-failure
+

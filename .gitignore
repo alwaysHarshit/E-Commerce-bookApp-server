@@ -4,4 +4,3 @@ target/
 mvnw.cmd
 mvnw
 *.yaml
-*.yml
