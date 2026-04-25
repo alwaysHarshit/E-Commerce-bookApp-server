@@ -10,3 +10,10 @@ services:
 
     restart: on-failure
 
+    networks:
+      - micro-net
+
+networks:
+  micro-net:
+    external: true
+
