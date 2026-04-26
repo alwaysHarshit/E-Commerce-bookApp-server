@@ -45,6 +45,6 @@ logging:
     root: error
     org.booknest: debug
 
-server:
-  servlet:
-    context-path: /authentication
+#server:
+#  servlet:
+#    context-path: /authentication
