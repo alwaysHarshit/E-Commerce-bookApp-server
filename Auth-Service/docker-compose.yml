@@ -1,12 +1,13 @@
 services:
   app:
     build: .
+    image: auth-service:2.0
     container_name: auth-app
     ports:
       - "8080:8080"
     depends_on:
       db:
-        condition: service_healthy   # ✅ fixed
+        condition: service_healthy
     networks:
       - micro-net
     environment:
