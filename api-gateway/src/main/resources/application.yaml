@@ -1,21 +1,35 @@
 spring:
   application:
     name: api-gateway
-
   cloud:
     gateway:
-      routes:
-        - id: catalog-service
-          uri: lb://CATALOG-SERVICE
-          predicates:
-            - Path=/catalog/**
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+#              http://localhost:8082               this is for local testing
+              uri: lb://AUTH-SERVICE:8080
+              predicates:
+                - Path=/auth/**, /user/**
 
+            - id: catelog-serivce
+              uri:
+                lb://CATALOG-SERVICE:8082
+#                http://localhost:8082            this is for local testign
+              predicates:
+                - Path=/admin/**, /api/books/**
 server:
   port: 9000
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8085/eureka
+      defaultZone: http://service-registry:8085/eureka
   instance:
     prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: debug
+    reactor.netty.http.client: DEBUG
+    root: error
