@@ -1,0 +1,18 @@
+version: '1.0'
+
+services:
+  app:
+    build: .
+    image: api-gateway:1.0
+    container_name: api-gateway
+    ports:
+      - "9000:9000"
+
+    restart: on-failure
+
+    networks:
+      - micro-net
+
+networks:
+  micro-net:
+    external: true

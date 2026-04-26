@@ -1,1 +1,10 @@
 .idea
+.mvn
+target/
+mvnw
+mvnw.cmd
+mvn.xml
+out/
+Auth-Service/
+Catelog-Service/
+service-registry/
