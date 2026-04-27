@@ -73,33 +73,31 @@ public class BookService {
         if (dto.getTitle() != null) {
             book.setTitle(dto.getTitle());
         }
-        if (dto.getAuthor() != null) {
-            book.setAuthor(dto.getAuthor());
-        }
-        if (dto.getIsbn() != null) {
-            book.setIsbn(dto.getIsbn());
-        }
-        if (dto.getGenre() != null) {
-            book.setGenre(dto.getGenre());
-        }
-        if (dto.getPublisher() != null) {
-            book.setPublisher(dto.getPublisher());
-        }
         if (dto.getPrice() != null) {
             book.setPrice(dto.getPrice());
         }
         if (dto.getStocks() != null) {
             book.setStock(dto.getStocks());
         }
-        if (dto.getRating() != null) {
-            book.setRating(dto.getRating());
+        if(dto.getCoverImage() != null) {
+
+            //first remove the orginal image from s3
+            awsUtils.deleteFromCloud(book.getCoverImageKey());
+
+            //second upload the new image on s3
+            String url;
+            try {
+                url = awsUtils.uploadOnCloud(dto.getCoverImage());
+            } catch (IOException e) {
+                throw new FileUploadException(e.getMessage());
+            }
+            // third update the key and image url
+            book.setCoverImageKey(dto.getCoverImage().getOriginalFilename());
+            book.setCoverImageUrl(url);
+
         }
-        if (dto.getDescription() != null) {
-            book.setDescription(dto.getDescription());
-        }
-        if (dto.getPublishedDate() != null) {
-            book.setPublishedDate(dto.getPublishedDate());
-        }
+
+        //save in db
         bookRepo.save(book);
     }
 
