@@ -31,7 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
-        final String username;
+        final String userId;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -39,9 +39,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
-        username = jwtUtils.extractUsername(jwt);
+        userId = jwtUtils.extractUserId(jwt);
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null && jwtUtils.validateToken(jwt)) {
+        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null && jwtUtils.validateToken(jwt)) {
 
             // Extract roles from JWT claims. Assuming they are stored in a claim named "roles"
             String rol = jwtUtils.extractClaim(jwt, claims -> claims.get("role", String.class));
@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .collect(Collectors.toList());
 
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    username,
+                    userId,
                     null,
                     authorities
             );

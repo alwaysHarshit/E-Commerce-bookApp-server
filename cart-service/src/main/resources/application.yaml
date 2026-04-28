@@ -1,3 +1,33 @@
 spring:
   application:
     name: cart-service
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 2118211
+    url: jdbc:mysql://localhost:3306/ecommerce
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+#      change the local host -> service-registry or docker
+      defaultZone: http://localhost:8085/eureka
+
+
+server:
+  port: 8084
+
+jwt:
+  # Replace this with your actual secret key used across services
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+logging:
+  level:
+    org.booknest.cartservice: debug
+    root: error
