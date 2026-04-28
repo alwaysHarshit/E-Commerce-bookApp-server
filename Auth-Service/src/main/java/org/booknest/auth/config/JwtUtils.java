@@ -19,22 +19,22 @@ public class JwtUtils {
 
     private static final String SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
 
-    public String generateToken(String username, String role) {
-        log.debug("Generating JWT token for username with role {}{}",username,role);
+    public String generateToken(Long userId, String role) {
+        log.debug("Generating JWT token for username with role {}{}",userId,role);
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username,role);
+        return createToken(claims, userId,role);
     }
 
-    private String createToken(Map<String, Object> claims, String userName, String role) {
+    private String createToken(Map<String, Object> claims, Long userId, String role) {
         String token = Jwts.builder()
                 .claims(claims)
-                .subject(userName)
+                .subject(String.valueOf(userId))
                 .claim("role",role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours
                 .signWith(getSignKey())
                 .compact();
-        log.debug("Token created successfully for {}", userName);
+        log.debug("Token created successfully for {}", userId);
         return token;
     }
 

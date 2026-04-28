@@ -9,7 +9,6 @@ import org.booknest.auth.exception.InvalidOtpException;
 import org.booknest.auth.exception.OtpExpiredException;
 import org.booknest.auth.model.*;
 import org.booknest.auth.repo.AuthRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,16 +27,16 @@ public class AuthService {
     private final AuthRepo authRepo;
     private final EmailService emailService;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    public AuthService(AuthRepo authRepo, EmailService emailService) {
+    public AuthService(AuthRepo authRepo, EmailService emailService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.authRepo = authRepo;
         this.emailService = emailService;
+        this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     public ApiResponse<LoginResponse> login(LoginRequest loginRequest) {
@@ -64,7 +63,7 @@ public class AuthService {
                     .map(r -> r.replace("ROLE_", ""))
                     .orElse("USER");
 
-            String token = jwtUtils.generateToken(user.getEmail(), role);
+            String token = jwtUtils.generateToken(user.getId(), role);
 
             LoginResponse loginResponse = new LoginResponse(token, user.getEmail(), user.getRole(), user.getName());
             return ApiResponse.success("Succesfully logged in ", loginResponse);

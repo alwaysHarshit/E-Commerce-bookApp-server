@@ -52,7 +52,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             user = userOptional.get();
         }
 
-        String token = jwtUtils.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtils.generateToken(user.getId(), user.getRole().name());
 
         // Redirect to frontend with token
         // In a real app, you might want to use a more secure way to pass the token
