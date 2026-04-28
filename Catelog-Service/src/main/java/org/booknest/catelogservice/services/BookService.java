@@ -114,6 +114,11 @@ public class BookService {
             bookRepo.delete(book);
     }
 
+    public List<Book> AllAdminBooks() {
+        return bookRepo.findAll();
+
+    }
+
 
     /****************** public  methods ***************************/
     public List<UserBookResponse> getAllBooks() {

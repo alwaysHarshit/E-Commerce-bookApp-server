@@ -3,8 +3,8 @@ package org.booknest.catelogservice.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.booknest.catelogservice.dto.BookRequestDTO;
+import org.booknest.catelogservice.entity.Book;
 import org.booknest.catelogservice.model.ApiResponse;
-import org.booknest.catelogservice.model.UserBookResponse;
 import org.booknest.catelogservice.services.BookService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +32,8 @@ public class BookController {
 
     @Operation(summary = "Get all books", description = "Retrieves a list of all books in the catalog.")
     @GetMapping("/books")
-    public ResponseEntity<ApiResponse<List<UserBookResponse>>> getAllBooks() {
-        List<UserBookResponse> allBooks = bookService.getAllBooks();
+    public ResponseEntity<ApiResponse<List<Book>>> getAllBooks() {
+        List<Book> allBooks = bookService.AllAdminBooks();
         return ResponseEntity.ok(ApiResponse.success("SuccessFully get all books", allBooks));
     }
 
