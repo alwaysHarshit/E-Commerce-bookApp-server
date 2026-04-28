@@ -1,1 +1,9 @@
 .idea
+api-gateway/
+Catelog-Service/
+service-registry/
+Auth-Service/
+.mvn
+mvnw
+mvn.cmd
+target/
