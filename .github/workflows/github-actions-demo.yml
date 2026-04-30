@@ -39,7 +39,7 @@ jobs:
             # 🛑 Stop old container if running
             docker stop cart-service || true
 
-            # ❌ Remove old container
+            # stop and Remove old container
             docker rm cart-service || true
 
             # 📥 Pull latest image from Docker Hub
