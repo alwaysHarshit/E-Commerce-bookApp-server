@@ -36,20 +36,23 @@ jobs:
           key: ${{ secrets.EC2_KEY}}
 
           script: |
-            # 🛑 Stop old container if running
-            docker stop cart-service || true
+            # 📦 Set variables for compose
+            export IMAGE_TAG=${{ github.sha }}
+            export DOCKER_USER=${{ secrets.DOCKER_USER }}
 
-            # stop and Remove old container
-            docker rm cart-service || true
+            export DB_URL="${{ secrets.DB_URL }}"
+            export DB_USER="${{ secrets.DB_USER }}"
+            export DB_PASS="${{ secrets.DB_PASS }}"
+            export EUREKA_URL="${{ secrets.EUREKA_URL }}"
 
-            # 📥 Pull latest image from Docker Hub
-            docker pull ${{ secrets.DOCKER_USER }}/cart-service:${{ github.sha }}
+            # 📂 Go to project folder (IMPORTANT)
+            cd /home/ubuntu/cart-service   # adjust path if different
 
-            # 🚀 Run new container with environment variables
-            docker run -p 8084:8084 \
-              --name cart-service \
-              -e DB_URL="${{ secrets.DB_URL }}" \
-              -e DB_USER="${{ secrets.DB_USER }}" \
-              -e DB_PASS="${{ secrets.DB_PASS }}" \
-              -e EUREKA_URL="${{ secrets.EUREKA_URL }}" \
-              ${{ secrets.DOCKER_USER }}/cart-service:${{ github.sha }}
+            # 🛑 Stop old containers
+            docker-compose down
+
+            # 📥 Pull latest image
+            docker-compose pull
+
+            # 🚀 Start new containers
+            docker-compose up -d

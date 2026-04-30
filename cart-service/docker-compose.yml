@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: cart-service:latest
+    image: ${DOCKER_USER}/cart-service:${IMAGE_TAG}
     container_name: cart-app
     ports:
       - "8084:8084"
