@@ -46,17 +46,24 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
 
           script: |
-            export IMAGE_TAG=${{ github.sha }}
-            export DOCKER_USER=${{ secrets.DOCKER_USER }}
+            mkdir -p /home/ubuntu
+            cd /home/ubuntu
 
-            export DB_URL="${{ secrets.DB_URL }}"
-            export DB_USER="${{ secrets.DB_USER }}"
-            export DB_PASS="${{ secrets.DB_PASS }}"
-            export EUREKA_URL="${{ secrets.EUREKA_URL }}"
+            # 📄 create .env file
+            cat <<EOF > .env
+            DOCKER_USER=${{ secrets.DOCKER_USER }}
+            IMAGE_TAG=${{ github.sha }}
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASS=${{ secrets.DB_PASS }}
+            EUREKA_URL=${{ secrets.EUREKA_URL }}
+            EOF
 
-            mkdir -p /home/ubuntu/cart-service
-            cd /home/ubuntu/cart-service
-
+            # 🛑 Stop old containers
             docker compose down || true
+
+            # 📥 Pull latest image
             docker compose pull
+
+            # 🚀 Start new containers
             docker compose up -d
