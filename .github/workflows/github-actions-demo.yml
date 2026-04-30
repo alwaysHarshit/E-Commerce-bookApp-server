@@ -47,7 +47,7 @@ jobs:
 
           script: |
             mkdir -p /home/ubuntu
-            cd /home/ubuntu
+            cd /home/ubuntu/cart-service
 
             # 📄 create .env file
             cat <<EOF > .env
