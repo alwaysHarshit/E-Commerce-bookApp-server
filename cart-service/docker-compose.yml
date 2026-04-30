@@ -1,0 +1,21 @@
+services:
+  app:
+    image: cart-service:latest
+    container_name: cart-app
+    ports:
+      - "8084:8084"
+    networks:
+      - micro-net
+
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+      EUREKA_URL: ${EUREKA_URL}
+
+    restart: always
+
+networks:
+  micro-net:
+    external: true
