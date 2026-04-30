@@ -35,7 +35,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           source: "cart-service/docker-compose.yml"
-          target: "/home/ubuntu/cart-service"
+          target: "/home/ubuntu/"
 
       # 🚀 Step 6: Deploy using docker-compose
       - name: Deploy to EC2
