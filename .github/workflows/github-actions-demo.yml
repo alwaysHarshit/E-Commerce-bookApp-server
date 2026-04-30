@@ -2,8 +2,8 @@ name: Deploy
 
 on:
   push:
-    paths:
-    - "cart-service/**"# triggers pipeline on this branch
+    branches:
+      - feature/cart-service
 
 jobs:
   deploy:
