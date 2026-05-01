@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: catalog-service
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  data:
+    mongodb:
+      database: ${SPRING_DATASOURCE_URL}
+      uri: ${SPRING_DATASOURCE_USERNAME}
+
+aws:
+  access-key: ${SPRING_AWS_ACCESS_KEY}
+  secret-key: ${SPRING_AWS_SECRET_KEY}
+  bucket-name: ${SPRING_AWS_BUCKET_NAME}
+  region: ${SPRING_AWS_REGION_NAME}
+
+server:
+  port: 8084
+
+logging:
+  level:
+    org.booknest: debug
+    root: error
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${SPRING_EUREKA_URL}
+  instance:
+    prefer-ip-address: true
