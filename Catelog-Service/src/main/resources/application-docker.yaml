@@ -10,6 +10,7 @@ spring:
   data:
     mongodb:
       uri: ${SPRING_DATA_MONGODB_URI}
+      database: Book
 
 aws:
   access-key: ${SPRING_AWS_ACCESS_KEY}
