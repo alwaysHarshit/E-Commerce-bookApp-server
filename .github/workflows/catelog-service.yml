@@ -40,7 +40,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             mkdir -p /home/ubuntu
-            cd /home/ubuntu/catalog-service
+            cd /home/ubuntu/Catelog-Service
 
             cat <<EOF > .env
             DOCKER_USER=${{ secrets.DOCKER_USER }}
