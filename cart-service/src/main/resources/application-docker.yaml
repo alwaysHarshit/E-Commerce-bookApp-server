@@ -33,3 +33,7 @@ logging:
   level:
     org.booknest.cartservice: debug
     root: error
+
+catalog:
+  service:
+    url: http://catalog-app:8082
