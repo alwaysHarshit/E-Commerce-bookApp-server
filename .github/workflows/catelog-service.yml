@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout code
-        run: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: login to docker hub
         run:  echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
@@ -39,7 +39,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
-            mkdir -p/home/ubuntu
+            mkdir -p /home/ubuntu
             cd /home/ubuntu/catalog-service
             
             # create .env file
