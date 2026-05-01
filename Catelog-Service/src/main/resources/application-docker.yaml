@@ -19,7 +19,7 @@ aws:
   region: ${SPRING_AWS_REGION_NAME}
 
 server:
-  port: 8084
+  port: 8082
 
 logging:
   level:
