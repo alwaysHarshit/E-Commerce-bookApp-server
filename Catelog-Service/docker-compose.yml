@@ -9,7 +9,6 @@ services:
       - "8082:8082"
     networks:
       - micro-net
-      -
     restart: on-failure
 
     environment:
