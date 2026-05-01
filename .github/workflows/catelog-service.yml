@@ -47,8 +47,7 @@ jobs:
             IMAGE_TAG=${{ github.sha }}
 
             DB_URL=${{ secrets.CATELOG_DB_URL }}
-            DB_USER=${{ secrets.CATELOG_DB_USER }}
-
+          
             AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
             AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
             AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }}

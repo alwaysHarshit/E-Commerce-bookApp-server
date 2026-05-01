@@ -9,8 +9,7 @@ spring:
 
   data:
     mongodb:
-      database: ${SPRING_DATASOURCE_URL}
-      uri: ${SPRING_DATASOURCE_USERNAME}
+      uri: ${SPRING_DATA_MONGODB_URI}
 
 aws:
   access-key: ${SPRING_AWS_ACCESS_KEY}
