@@ -11,23 +11,23 @@ jobs:
 
     steps:
 
-      # 📥 Step 1: Checkout code
+      #  Step 1: Checkout code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 🐳 Step 2: Login to Docker Hub
+      #  Step 2: Login to Docker Hub
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
 
-      # 🏗️ Step 3: Build image
+      #  Step 3: Build image
       - name: Build Docker Image
         run: docker build -t ${{ secrets.DOCKER_USER }}/cart-service:${{ github.sha }} ./cart-service
 
-      # 📤 Step 4: Push image
+      #  Step 4: Push image
       - name: Push Docker Image
         run: docker push ${{ secrets.DOCKER_USER }}/cart-service:${{ github.sha }}
 
-      # 📁 ✅ Step 5: Copy docker-compose.yml to EC2 (ADD HERE)
+      # Step 5: Copy docker-compose.yml to EC2 (ADD HERE)
       - name: Copy docker-compose.yml to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -37,7 +37,7 @@ jobs:
           source: "cart-service/docker-compose.yml"
           target: "/home/ubuntu/"
 
-      # 🚀 Step 6: Deploy using docker-compose
+      #  Step 6: Deploy using docker-compose
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -49,7 +49,7 @@ jobs:
             mkdir -p /home/ubuntu
             cd /home/ubuntu/cart-service
 
-            # 📄 create .env file
+            # create .env file
             cat <<EOF > .env
             DOCKER_USER=${{ secrets.DOCKER_USER }}
             IMAGE_TAG=${{ github.sha }}
@@ -59,11 +59,11 @@ jobs:
             EUREKA_URL=${{ secrets.EUREKA_URL }}
             EOF
 
-            # 🛑 Stop old containers
-            docker compose down || true
+            #  Stop old containers
+            docker compose down
 
-            # 📥 Pull latest image
+            #  Pull latest image
             docker compose pull
 
-            # 🚀 Start new containers
+            #  Start new containers
             docker compose up -d
