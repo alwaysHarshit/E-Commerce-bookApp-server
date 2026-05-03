@@ -3,10 +3,13 @@ version: '3.0'
 services:
   app:
     build: .
-    image: api-gateway:3.0
+    image: ${DOCKER_USER}/api-gateway:${IMAGE_TAG}
     container_name: api-gateway
     ports:
-      - "9000:9000"
+      - "8080:8080"
+
+    environment:
+      EUREKA_URL: ${EUREKA_URL}
 
     restart: on-failure
 

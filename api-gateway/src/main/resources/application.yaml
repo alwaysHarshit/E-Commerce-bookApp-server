@@ -1,53 +1,41 @@
 spring:
-  application:
-    name: api-gateway
-
   cloud:
     gateway:
       server:
         webflux:
           routes:
             - id: auth-service
-#              http://localhost:8082               this is for local testing
-              uri: lb://AUTH-SERVICE:8080
+              uri: lb://AUTH-SERVICE
               predicates:
                 - Path=/auth/**, /user/**
 
-            - id: catelog-serivce
-              uri:
-                lb://CATALOG-SERVICE:8082
-#                http://localhost:8082            this is for local testign
+            - id: catalog-service
+              uri: lb://CATALOG-SERVICE
               predicates:
                 - Path=/admin/**, /api/books/**
+
+            - id: cart-service
+              uri: lb://CART-SERVICE
+              predicates:
+                - Path=/cart/**
+
           globalcors:
             cors-configurations:
               '[/**]':
                 allowed-origins:
-                  - "http://localhost:5173"
+                  - "*"
                 allowed-methods:
-                  - GET
-                  - POST
-                  - PUT
-                  - DELETE
-                  - PATCH
-                  - OPTIONS
+                  - "*"
                 allowed-headers:
                   - "*"
-                allow-credentials: true
-            add-to-simple-url-handler-mapping: true
-
-
-server:
-  port: 9000
+                allow-credentials: false
 
 eureka:
   client:
+    register-with-eureka: true
+    fetch-registry: true
     service-url:
-      defaultZone: http://service-registry:8085/eureka
-  instance:
-    prefer-ip-address: true
+      defaultZone: ${EUREKA_URL}
 
-logging:
-  level:
-    root: error
-    org.booknest.apigateway: debug
+server:
+  port: 8080
