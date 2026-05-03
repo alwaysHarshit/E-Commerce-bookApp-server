@@ -6,6 +6,8 @@ eureka:
   client:
     fetch-registry: false
     register-with-eureka: false
+    service-url:
+      defaultZone: http://service-registry:9000/eureka
 
 server:
   port: 9000
