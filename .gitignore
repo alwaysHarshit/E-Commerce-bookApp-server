@@ -17,7 +17,7 @@ spring-boot-devtools.properties
 
 # AWS credentials (should never be committed)
 **/application-*.properties
-**/application-*.yml
+
 **/*.pem
 **/*.key
 

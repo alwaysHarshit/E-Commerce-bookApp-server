@@ -48,7 +48,6 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Otp Sent successfully", null));
     }
 
-
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestParam("otp") String otp, @RequestParam("email") String email) {
         log.info("OTP verification request received for user: {}", email);
@@ -56,16 +55,9 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Otp verified successfully", null));
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserDetails>> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-        log.info("Fetching profile for user: {}", userDetails != null ? userDetails.getUsername() : "null");
-        return ResponseEntity.ok(ApiResponse.success("Profile fetched successfully", userDetails));
+    @PostMapping("/test/addAdmin")
+    public ResponseEntity<ApiResponse<Void>> addNewAdminFirstTime(@RequestBody RegisterRequest registerRequest) {
+        log.info("Add Admin request received for user: {}", registerRequest.getEmail());
+        return this.registerAdmin(registerRequest);
     }
-
-    @GetMapping("/gitProfile")
-    public ResponseEntity<ApiResponse<OAuth2User>> getGitUser(@AuthenticationPrincipal OAuth2User userDetails) {
-        log.info("Fetching GitHub profile");
-        return ResponseEntity.ok(ApiResponse.success("GitHub profile fetched successfully", userDetails));
-    }
-
 }
