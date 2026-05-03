@@ -6,7 +6,7 @@ services:
 
     networks:
       - micro-net
-      -
+
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: ${USER_DB_URL}
