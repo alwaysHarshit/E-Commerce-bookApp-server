@@ -18,5 +18,6 @@ COPY --from=build /app/target/*.jar app.jar
 
 # Expose the port the service runs on
 EXPOSE 8084
+
 # Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xms128m", "-Xmx256m", "-XX:+UseSerialGC", "-jar", "app.jar"]
