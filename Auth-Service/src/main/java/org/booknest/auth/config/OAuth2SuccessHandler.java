@@ -3,9 +3,10 @@ package org.booknest.auth.config;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.booknest.auth.entity.Role;
-import org.booknest.auth.entity.User;
-import org.booknest.auth.repo.AuthRepo;
+import org.booknest.auth.enums.Provider;
+import org.booknest.auth.enums.Role;
+import org.booknest.auth.entity.UserEntity;
+import org.booknest.auth.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -23,7 +24,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private AuthRepo authRepo;
+    private UserRepo userRepo;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -36,23 +37,23 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             email = oAuth2User.getAttribute("login") + "@github.com";
         }
 
-        Optional<User> userOptional = authRepo.findByEmail(email);
-        User user;
+        Optional<UserEntity> userOptional = userRepo.findByEmail(email);
+        UserEntity userEntity;
         if (userOptional.isEmpty()) {
-            user = new User();
-            user.setEmail(email);
-            user.setName(name != null ? name : (String) oAuth2User.getAttribute("login"));
-            user.setProvider("GITHUB");
-            user.setProviderId(oAuth2User.getName());
-            user.setRole(Role.USER);
-            user.setVerified(true);
-            user.setCreatedAt(LocalDateTime.now());
-            authRepo.save(user);
+            userEntity = new UserEntity();
+            userEntity.setEmail(email);
+            userEntity.setName(name != null ? name : (String) oAuth2User.getAttribute("login"));
+            userEntity.setProvider(Provider.GITHUB);
+            userEntity.setProviderId(oAuth2User.getName());
+            userEntity.setRole(Role.USER);
+            userEntity.setVerified(true);
+            userEntity.setCreatedAt(LocalDateTime.now());
+            userRepo.save(userEntity);
         } else {
-            user = userOptional.get();
+            userEntity = userOptional.get();
         }
 
-        String token = jwtUtils.generateToken(user.getId(), user.getRole().name());
+        String token = jwtUtils.generateToken(userEntity.getId(), userEntity.getRole().name());
 
         // Redirect to frontend with token
         // In a real app, you might want to use a more secure way to pass the token

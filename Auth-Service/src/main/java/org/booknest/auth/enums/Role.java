@@ -1,4 +1,4 @@
-package org.booknest.auth.entity;
+package org.booknest.auth.enums;
 
 public enum Role {
     USER,

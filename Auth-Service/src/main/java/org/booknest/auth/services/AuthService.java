@@ -2,13 +2,14 @@ package org.booknest.auth.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.booknest.auth.config.JwtUtils;
-import org.booknest.auth.entity.Role;
-import org.booknest.auth.entity.User;
+import org.booknest.auth.entity.UserEntity;
+import org.booknest.auth.enums.Provider;
+import org.booknest.auth.enums.Role;
 import org.booknest.auth.exception.EmailAlreadyExistsException;
 import org.booknest.auth.exception.InvalidOtpException;
 import org.booknest.auth.exception.OtpExpiredException;
 import org.booknest.auth.model.*;
-import org.booknest.auth.repo.AuthRepo;
+import org.booknest.auth.repo.UserRepo;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,15 +25,17 @@ import java.time.LocalDateTime;
 @Service
 public class AuthService {
 
-    private final AuthRepo authRepo;
+    private final UserRepo userRepo;
     private final EmailService emailService;
-
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
-    public AuthService(AuthRepo authRepo, EmailService emailService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
-        this.authRepo = authRepo;
+    public AuthService(UserRepo userRepo, EmailService emailService,
+                       AuthenticationManager authenticationManager,
+                       PasswordEncoder passwordEncoder,
+                       JwtUtils jwtUtils) {
+        this.userRepo = userRepo;
         this.emailService = emailService;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
@@ -77,7 +80,7 @@ public class AuthService {
 
     public void register(RegisterRequest registerRequest, Role role) {
         log.info("Processing registration for email: {}", registerRequest.getEmail());
-        if (authRepo.existsByEmail(registerRequest.getEmail())) {
+        if (userRepo.existsByEmail(registerRequest.getEmail())) {
             log.warn("Registration failed: Email {} already exists", registerRequest.getEmail());
             throw new EmailAlreadyExistsException("Email already exists");
         }
@@ -85,19 +88,19 @@ public class AuthService {
         String otp = generateOtp();
         log.debug("Generated OTP for {}: {}", registerRequest.getEmail(), otp);
 
-        User user = new User();
-        user.setEmail(registerRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setName(registerRequest.getName());
-        user.setProvider("LOCAL");
-        user.setVerified(false);
-        user.setOtp(otp);
-        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
-        user.setCreatedAt(LocalDateTime.now());
+        UserEntity userEntity = new UserEntity();
+        userEntity.setEmail(registerRequest.getEmail());
+        userEntity.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        userEntity.setName(registerRequest.getName());
+        userEntity.setProvider(Provider.LOCAL);
+        userEntity.setVerified(false);
+        userEntity.setOtp(otp);
+        userEntity.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
+        userEntity.setCreatedAt(LocalDateTime.now());
 
-        user.setRole(role);
+        userEntity.setRole(role);
 
-        authRepo.save(user);
+        userRepo.save(userEntity);
 
         log.info("User {} saved to DB (unverified)", registerRequest.getEmail());
 
@@ -106,29 +109,28 @@ public class AuthService {
 
     public void verifyOtp(String otp, String email) {
         log.info("Verifying OTP for email: {}", email);
-        User dbUser = authRepo.findByEmail(email).orElseThrow(() -> {
+        UserEntity dbUserEntity = userRepo.findByEmail(email).orElseThrow(() -> {
             log.error("OTP Verification failed: User {} not found", email);
             return new UsernameNotFoundException("User not found");
         });
 
-        if (dbUser.getOtpExpiry().isBefore(LocalDateTime.now())) {
+        if (dbUserEntity.getOtpExpiry().isBefore(LocalDateTime.now())) {
             log.warn("OTP Verification failed for {}: OTP expired", email);
             throw new OtpExpiredException("Otp is expired");
         }
 
-        if (!dbUser.getOtp().equals(otp)) {
+        if (!dbUserEntity.getOtp().equals(otp)) {
             log.warn("OTP Verification failed for {}: Invalid OTP", email);
             throw new InvalidOtpException("Otp is Invalid");
         }
 
-        dbUser.setVerified(true);
-        dbUser.setOtp(null);
-        dbUser.setOtpExpiry(null);
-        authRepo.save(dbUser);
+        dbUserEntity.setVerified(true);
+        dbUserEntity.setOtp(null);
+        dbUserEntity.setOtpExpiry(null);
+        userRepo.save(dbUserEntity);
         log.info("User {} successfully verified", email);
 
     }
-
     public String generateOtp() {
         SecureRandom random = new SecureRandom();
         int otp = random.nextInt(900000) + 100000;

@@ -46,10 +46,26 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.failure("Invalid email or password"));
     }
 
+    @ExceptionHandler(AddressNotFound.class)
+    public ResponseEntity <ApiResponse<Void>> handleAddressNotFound(AddressNotFound e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.failure(e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception e) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.failure("An unexpected error occurred: " + e.getMessage()));
     }
+
+    @ExceptionHandler(InvalidUser.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidUser(InvalidUser e) {
+        return ResponseEntity.
+                status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.failure(e.getMessage()));
+    }
+
+
 }

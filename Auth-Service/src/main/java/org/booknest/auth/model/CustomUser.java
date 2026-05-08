@@ -1,9 +1,8 @@
 package org.booknest.auth.model;
 
 import lombok.Data;
-import lombok.Getter;
-import org.booknest.auth.entity.Role;
-import org.booknest.auth.entity.User;
+import org.booknest.auth.enums.Role;
+import org.booknest.auth.entity.UserEntity;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,12 +19,12 @@ public class CustomUser  implements UserDetails {
     private String name;
     private Role role;
 
-    public CustomUser(User user) {
-        this.id = user.getId();
-        this.email = user.getEmail();
-        this.password = user.getPassword();
-        this.name = user.getName();
-        this.role = user.getRole();
+    public CustomUser(UserEntity userEntity) {
+        this.id = userEntity.getId();
+        this.email = userEntity.getEmail();
+        this.password = userEntity.getPassword();
+        this.name = userEntity.getName();
+        this.role = userEntity.getRole();
     }
 
     @Override
