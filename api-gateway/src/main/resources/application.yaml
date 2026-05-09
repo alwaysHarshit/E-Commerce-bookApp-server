@@ -9,7 +9,7 @@ spring:
             - id: auth-service
               uri: lb://AUTH-SERVICE
               predicates:
-                - Path=/auth/**, /user/**
+                - Path=/auth-service/**
 
             - id: catalog-service
               uri: lb://CATALOG-SERVICE
