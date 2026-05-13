@@ -1,6 +1,7 @@
 spring:
   application:
     name: api-gateway
+
   cloud:
     gateway:
       server:
@@ -20,17 +21,6 @@ spring:
               uri: lb://CART-SERVICE
               predicates:
                 - Path=/cart/**
-
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowed-origins:
-                  - "*"
-                allowed-methods:
-                  - "*"
-                allowed-headers:
-                  - "*"
-                allow-credentials: false
 
 eureka:
   client:
