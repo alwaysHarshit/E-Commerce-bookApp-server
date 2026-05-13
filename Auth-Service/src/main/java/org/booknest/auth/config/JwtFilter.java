@@ -5,7 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.booknest.auth.services.CustomUserDetailsService;
+import org.booknest.auth.utils.CustomUserDetailsService;
+import org.booknest.auth.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -63,8 +64,9 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
+            log.debug("Username '{}' found", username);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            log.debug("Loaded user '{}'", userDetails.getUsername());
 
             if (!jwtUtils.validateToken(token, userDetails)) {
                 log.warn("Token validation failed for user {}", username);

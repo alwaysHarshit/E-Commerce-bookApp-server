@@ -7,6 +7,7 @@ import org.booknest.auth.enums.Provider;
 import org.booknest.auth.enums.Role;
 import org.booknest.auth.entity.UserEntity;
 import org.booknest.auth.repo.UserRepo;
+import org.booknest.auth.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;

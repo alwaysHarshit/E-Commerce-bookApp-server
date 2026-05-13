@@ -1,4 +1,4 @@
-package org.booknest.auth.services;
+package org.booknest.auth.utils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;

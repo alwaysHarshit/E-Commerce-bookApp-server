@@ -1,7 +1,11 @@
 package org.booknest.auth.services;
 
 import lombok.extern.slf4j.Slf4j;
-import org.booknest.auth.config.JwtUtils;
+import org.booknest.auth.dto.LoginRequestDto;
+import org.booknest.auth.dto.RegisterRequestDto;
+import org.booknest.auth.utils.CustomUser;
+import org.booknest.auth.utils.EmailService;
+import org.booknest.auth.utils.JwtUtils;
 import org.booknest.auth.entity.UserEntity;
 import org.booknest.auth.enums.Provider;
 import org.booknest.auth.enums.Role;
@@ -42,17 +46,18 @@ public class AuthService {
         this.jwtUtils = jwtUtils;
     }
 
-    public ApiResponse<LoginResponse> login(LoginRequest loginRequest) {
-        log.info("Attempting login for user: {}", loginRequest.getEmail());
+    public ApiResponse<LoginResponse> login(LoginRequestDto loginRequestDto) {
+        log.info("Attempting login for user: {}", loginRequestDto.getEmail());
         Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()
+                        loginRequestDto.getEmail(),
+                        loginRequestDto.getPassword()
                 )
         );
+        log.debug("Authentication result: {}", authenticate.getPrincipal());
 
         if (authenticate.isAuthenticated()) {
-            log.info("Authentication successful for {}", loginRequest.getEmail());
+            log.info("Authentication successful for {}", loginRequestDto.getEmail());
 
             CustomUser user = (CustomUser) authenticate.getPrincipal();
 
@@ -73,25 +78,25 @@ public class AuthService {
 
 
         } else {
-            log.error("Authentication failed for {}", loginRequest.getEmail());
+            log.error("Authentication failed for {}", loginRequestDto.getEmail());
             throw new UsernameNotFoundException("Invalid user request");
         }
     }
 
-    public void register(RegisterRequest registerRequest, Role role) {
-        log.info("Processing registration for email: {}", registerRequest.getEmail());
-        if (userRepo.existsByEmail(registerRequest.getEmail())) {
-            log.warn("Registration failed: Email {} already exists", registerRequest.getEmail());
+    public void register(RegisterRequestDto registerRequestDto, Role role) {
+        log.info("Processing registration for email: {}", registerRequestDto.getEmail());
+        if (userRepo.existsByEmail(registerRequestDto.getEmail())) {
+            log.warn("Registration failed: Email {} already exists", registerRequestDto.getEmail());
             throw new EmailAlreadyExistsException("Email already exists");
         }
 
         String otp = generateOtp();
-        log.debug("Generated OTP for {}: {}", registerRequest.getEmail(), otp);
+        log.debug("Generated OTP for {}: {}", registerRequestDto.getEmail(), otp);
 
         UserEntity userEntity = new UserEntity();
-        userEntity.setEmail(registerRequest.getEmail());
-        userEntity.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        userEntity.setName(registerRequest.getName());
+        userEntity.setEmail(registerRequestDto.getEmail());
+        userEntity.setPassword(passwordEncoder.encode(registerRequestDto.getPassword()));
+        userEntity.setName(registerRequestDto.getName());
         userEntity.setProvider(Provider.LOCAL);
         userEntity.setVerified(false);
         userEntity.setOtp(otp);
@@ -102,9 +107,9 @@ public class AuthService {
 
         userRepo.save(userEntity);
 
-        log.info("User {} saved to DB (unverified)", registerRequest.getEmail());
+        log.info("User {} saved to DB (unverified)", registerRequestDto.getEmail());
 
-        emailService.sendEmail(registerRequest.getEmail(), otp);
+        emailService.sendEmail(registerRequestDto.getEmail(), otp);
     }
 
     public void verifyOtp(String otp, String email) {

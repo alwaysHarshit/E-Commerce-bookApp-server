@@ -1,6 +1,7 @@
 package org.booknest.auth.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -47,6 +48,7 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "List of user addresses")
+    @JsonManagedReference
     private List<AddressEntity> adresses=new ArrayList<>();
 
     @Schema(description = "Is user email verified", example = "true")

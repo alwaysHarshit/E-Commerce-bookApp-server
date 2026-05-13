@@ -26,8 +26,9 @@ public class UserService {
     public void updatePassword(UpdatePasswordDTO requestDTO, UserDetails userDetails) {
 
         //get the user entity from db
-        String email = userDetails.getUsername();
-        UserEntity dbUser = userRepo.findByEmail(email).orElseThrow(()->new UserNotFoundException("User not found"));
+        String userId = userDetails.getUsername();
+
+        UserEntity dbUser = userRepo.findById(Long.valueOf(userId)).orElseThrow(()->new UserNotFoundException("User not found"));
 
         //change the password
         if(requestDTO.getOldPassword()!=null && requestDTO.getNewPassword() !=null){
@@ -45,12 +46,13 @@ public class UserService {
     }
 
     public UserEntity getUser(UserDetails userDetails) {
-        return  userRepo.findByEmail(userDetails.getUsername()).orElseThrow(()->new UserNotFoundException("User not found"));
+        log.debug("Getting user by username {}", userDetails.getUsername() );
+        return  userRepo.findById(Long.valueOf(userDetails.getUsername())).orElseThrow(()->new UserNotFoundException("User not found"));
     }
 
     @Transactional
     public void deleteAccount(UserDetails userDetails) {
-        userRepo.deleteByEmail(userDetails.getUsername());
+        userRepo.deleteById(Long.valueOf(userDetails.getUsername()));
     }
 }
 

@@ -1,4 +1,4 @@
-package org.booknest.auth.model;
+package org.booknest.auth.utils;
 
 import lombok.Data;
 import org.booknest.auth.enums.Role;
@@ -42,7 +42,7 @@ public class CustomUser  implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return String.valueOf(id);
     }
 
     @Override

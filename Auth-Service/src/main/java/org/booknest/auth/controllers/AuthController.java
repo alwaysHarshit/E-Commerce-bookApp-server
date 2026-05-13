@@ -5,9 +5,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.booknest.auth.enums.Role;
-import org.booknest.auth.model.LoginRequest;
+import org.booknest.auth.dto.LoginRequestDto;
 import org.booknest.auth.model.LoginResponse;
-import org.booknest.auth.model.RegisterRequest;
+import org.booknest.auth.dto.RegisterRequestDto;
 import org.booknest.auth.services.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,10 +29,10 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Successfully authenticated")
     @ApiResponse(responseCode = "401", description = "Invalid credentials")
     @PostMapping("/login")
-    public ResponseEntity<org.booknest.auth.model.ApiResponse<LoginResponse>> login(@RequestBody LoginRequest loginRequest) {
-        log.info("Login request received for user: {}", loginRequest.getEmail());
-        org.booknest.auth.model.ApiResponse<LoginResponse> apiResponse = authService.login(loginRequest);
-        log.info("Login successful, token generated for user: {}", loginRequest.getEmail());
+    public ResponseEntity<org.booknest.auth.model.ApiResponse<LoginResponse>> login(@RequestBody LoginRequestDto loginRequestDto) {
+        log.info("Login request received for user: {}", loginRequestDto.getEmail());
+        org.booknest.auth.model.ApiResponse<LoginResponse> apiResponse = authService.login(loginRequestDto);
+        log.info("Login successful, token generated for user: {}", loginRequestDto.getEmail());
         return ResponseEntity.ok(apiResponse);
     }
 
@@ -40,9 +40,9 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Registration initiated, OTP sent")
     @ApiResponse(responseCode = "400", description = "Invalid input or email already exists")
     @PostMapping("/register")
-    public ResponseEntity<org.booknest.auth.model.ApiResponse<Void>> register(@RequestBody RegisterRequest registerRequest) {
-        log.info("Registration request received for user: {}", registerRequest.getEmail());
-        authService.register(registerRequest, Role.USER);
+    public ResponseEntity<org.booknest.auth.model.ApiResponse<Void>> register(@RequestBody RegisterRequestDto registerRequestDto) {
+        log.info("Registration request received for user: {}", registerRequestDto.getEmail());
+        authService.register(registerRequestDto, Role.USER);
         return ResponseEntity.ok(org.booknest.auth.model.ApiResponse.success("Otp Sent successfully", null));
     }
 
@@ -51,9 +51,9 @@ public class AuthController {
     @ApiResponse(responseCode = "403", description = "Forbidden - requires ADMIN role")
     @PostMapping("/admin/register")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<org.booknest.auth.model.ApiResponse<Void>> registerAdmin(@RequestBody RegisterRequest registerRequest) {
-        log.info("Registration Admin request received for user: {}", registerRequest.getEmail());
-        authService.register(registerRequest, Role.ADMIN);
+    public ResponseEntity<org.booknest.auth.model.ApiResponse<Void>> registerAdmin(@RequestBody RegisterRequestDto registerRequestDto) {
+        log.info("Registration Admin request received for user: {}", registerRequestDto.getEmail());
+        authService.register(registerRequestDto, Role.ADMIN);
         return ResponseEntity.ok(org.booknest.auth.model.ApiResponse.success("Otp Sent successfully", null));
     }
 
@@ -70,8 +70,8 @@ public class AuthController {
     @Operation(summary = "Add First Admin", description = "Endpoint to add the first admin user without existing admin role (for initial setup)")
     @ApiResponse(responseCode = "200", description = "Admin added successfully")
     @PostMapping("/test/addAdmin")
-    public ResponseEntity<org.booknest.auth.model.ApiResponse<Void>> addNewAdminFirstTime(@RequestBody RegisterRequest registerRequest) {
-        log.info("Add Admin request received for user: {}", registerRequest.getEmail());
-        return this.registerAdmin(registerRequest);
+    public ResponseEntity<org.booknest.auth.model.ApiResponse<Void>> addNewAdminFirstTime(@RequestBody RegisterRequestDto registerRequestDto) {
+        log.info("Add Admin request received for user: {}", registerRequestDto.getEmail());
+        return this.registerAdmin(registerRequestDto);
     }
 }

@@ -1,4 +1,4 @@
-package org.booknest.auth.config;
+package org.booknest.auth.utils;
 
 
 import jakarta.servlet.FilterChain;

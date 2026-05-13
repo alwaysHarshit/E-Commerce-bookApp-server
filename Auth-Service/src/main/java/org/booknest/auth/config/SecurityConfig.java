@@ -1,7 +1,7 @@
 package org.booknest.auth.config;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.booknest.auth.services.CustomUserDetailsService;
+import org.booknest.auth.utils.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,6 +44,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, ClientRegistrationRepository repo) {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                //.cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login","/auth/register","/auth/verify-otp", "/oauth2/**","/auth/test/addAdmin").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
@@ -94,5 +95,20 @@ public class SecurityConfig {
         );
         return resolver;
     }
+
+    /* this is only for local testing */
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+//        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+//        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
+//        configuration.setAllowCredentials(true);
+//        configuration.setMaxAge(3600L);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 
 }

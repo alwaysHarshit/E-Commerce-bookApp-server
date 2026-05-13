@@ -1,4 +1,4 @@
-package org.booknest.auth.config;
+package org.booknest.auth.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

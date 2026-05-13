@@ -1,5 +1,6 @@
 package org.booknest.auth.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -46,6 +47,7 @@ public class AddressEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     @Schema(hidden = true)
     private UserEntity user;
 
