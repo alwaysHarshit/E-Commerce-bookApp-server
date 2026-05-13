@@ -44,7 +44,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, ClientRegistrationRepository repo) {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                //.cors(Customizer.withDefaults())
+               // .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login","/auth/register","/auth/verify-otp", "/oauth2/**","/auth/test/addAdmin").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
