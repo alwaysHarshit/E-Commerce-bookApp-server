@@ -15,12 +15,12 @@ spring:
             - id: catalog-service
               uri: lb://CATALOG-SERVICE
               predicates:
-                - Path=/admin/**, /api/books/**
+                - Path=/catalog-service/**
 
             - id: cart-service
               uri: lb://CART-SERVICE
               predicates:
-                - Path=/cart/**
+                - Path=/cart-service/**
 
 eureka:
   client:
