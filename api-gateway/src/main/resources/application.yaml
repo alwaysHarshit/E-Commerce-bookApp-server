@@ -22,6 +22,16 @@ spring:
               predicates:
                 - Path=/cart-service/**
 
+            - id : order-service
+              uri: lb//ORDER-SERVICE
+              predicates:
+                - Path=/order-service/**
+
+            - id: payment-service
+              uri: lb//PAYMENT-SERVICE
+              predicates:
+                - Path=/payment-service/**
+
 eureka:
   client:
     register-with-eureka: true
