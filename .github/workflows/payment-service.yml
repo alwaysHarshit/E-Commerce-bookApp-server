@@ -28,7 +28,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
-          source: "payment-service/docker-compose.yml"
+          source: "payment-service/docker-compose.yaml"
           target: "/home/ubuntu/"
 
       #  Step 6: Deploy using docker-compose
