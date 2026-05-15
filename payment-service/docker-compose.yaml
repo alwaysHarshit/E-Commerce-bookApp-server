@@ -2,7 +2,7 @@ version: "2.0"
 
 services:
   app:
-    build: .
+    build: src
     image: ${DOCKER_USER}/payment-service:${IMAGE_TAG}
     container_name: payment-app
     networks:
