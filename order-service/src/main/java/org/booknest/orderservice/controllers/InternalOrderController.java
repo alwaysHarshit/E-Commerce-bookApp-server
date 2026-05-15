@@ -3,18 +3,16 @@ package org.booknest.orderservice.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.booknest.orderservice.dto.PaymentStatusUpdateRequest;
 import org.booknest.orderservice.service.OrderService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/orders/internal")
+@RequestMapping("/api/internal/orders")
 @RequiredArgsConstructor
 @Tag(name = "Internal Order Controller", description = "Internal APIs for other microservices")
 public class InternalOrderController {
@@ -30,5 +28,14 @@ public class InternalOrderController {
         Map<String, Boolean> response = new HashMap<>();
         response.put("purchased", purchased);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{orderId}/payment-status")
+    @Operation(summary = "Update order payment status", description = "Called by Payment Service to update status based on Stripe events")
+    public ResponseEntity<Void> updatePaymentStatus(
+            @PathVariable Long orderId,
+            @RequestBody PaymentStatusUpdateRequest request) {
+        orderService.updatePaymentStatus(orderId, request);
+        return ResponseEntity.ok().build();
     }
 }

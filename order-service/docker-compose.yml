@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    image: ${DOCKER_USER}/order-service:${IMAGE_TAG}
+    container_name: order-app
+
+    networks:
+      - micro-net
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+      EUREKA_URL: ${EUREKA_URL}
+
+networks:
+  micro-net:
+    external: true

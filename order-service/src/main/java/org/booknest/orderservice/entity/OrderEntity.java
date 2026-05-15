@@ -33,11 +33,17 @@ public class OrderEntity {
     private PaymentStatus paymentStatus;
 
     private Long paymentId;
+    private String paymentIntentId;
+    private String transactionId;
+    private LocalDateTime paidAt;
+    private LocalDateTime expiresAt;
+    private Double paidAmount;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItemEntity> items = new ArrayList<>();
 
     private LocalDateTime createdAt;
@@ -54,4 +60,3 @@ public class OrderEntity {
         updatedAt = LocalDateTime.now();
     }
 }
-

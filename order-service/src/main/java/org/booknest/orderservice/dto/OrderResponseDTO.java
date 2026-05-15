@@ -23,6 +23,10 @@ public class OrderResponseDTO {
     private PaymentType paymentMethod;
     private PaymentStatus paymentStatus;
     private OrderStatus orderStatus;
+    private String paymentIntentId;
+    private String transactionId;
+    private LocalDateTime paidAt;
+    private Double paidAmount;
     private List<OrderItemResponseDTO> items;
     private LocalDateTime createdAt;
 }

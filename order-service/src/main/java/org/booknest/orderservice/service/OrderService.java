@@ -2,6 +2,7 @@ package org.booknest.orderservice.service;
 
 import org.booknest.orderservice.dto.OrderRequestDTO;
 import org.booknest.orderservice.dto.OrderResponseDTO;
+import org.booknest.orderservice.dto.PaymentStatusUpdateRequest;
 import org.booknest.orderservice.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,5 @@ public interface OrderService {
     
     // Internal API
     boolean hasPurchased(Long userId, Long bookId);
+    void updatePaymentStatus(Long orderId, PaymentStatusUpdateRequest request);
 }

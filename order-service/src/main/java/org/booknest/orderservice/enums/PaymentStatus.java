@@ -1,8 +1,9 @@
 package org.booknest.orderservice.enums;
 
 public enum PaymentStatus {
-    PENDING,
-    PAID,
+    INITIATED,
+    SUCCESS,
     FAILED,
+    CANCELED,
     REFUNDED
 }
