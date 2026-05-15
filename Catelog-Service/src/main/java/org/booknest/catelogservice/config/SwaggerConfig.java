@@ -14,7 +14,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("BookNest Catelog Service API")
-                        .version("1.0")
+                        .version("2.0")
                         .description("API documentation for the BookNest Book/Catalog Microservice")
                         .contact(new Contact()
                                 .name("BookNest Support")

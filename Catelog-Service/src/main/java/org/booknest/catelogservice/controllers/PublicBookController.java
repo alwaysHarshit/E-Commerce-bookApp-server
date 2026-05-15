@@ -2,8 +2,8 @@ package org.booknest.catelogservice.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.booknest.catelogservice.dto.UserBookResponse;
 import org.booknest.catelogservice.model.ApiResponse;
-import org.booknest.catelogservice.model.UserBookResponse;
 import org.booknest.catelogservice.services.BookService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,13 +24,13 @@ public class PublicBookController {
 
     @Operation(summary = "Get all books", description = "Retrieves a list of all books available in the catalog.")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<UserBookResponse>>> getAllBooks() {
+    public ResponseEntity<ApiResponse<List<UserBookResponse>>> getAllPublicBooks() {
         return ResponseEntity.ok(ApiResponse.success("Successfully retrieved all books", bookService.getAllBooks()));
     }
 
     @Operation(summary = "Get book by ID", description = "Retrieves detailed information about a specific book.")
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserBookResponse>> getBookById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<UserBookResponse>> getBookById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success("Successfully retrieved book", bookService.getBookById(id)));
     }
 
@@ -50,11 +50,5 @@ public class PublicBookController {
     @GetMapping("/filter/genre")
     public ResponseEntity<ApiResponse<List<UserBookResponse>>> filterByGenre(@RequestParam String genre) {
         return ResponseEntity.ok(ApiResponse.success("Filter results for genre: " + genre, bookService.filterByGenre(genre)));
-    }
-
-    @Operation(summary = "Full-text search", description = "Searches for books matching a keyword in title, author, or description.")
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<UserBookResponse>>> searchByKeyword(@RequestParam String keyword) {
-        return ResponseEntity.ok(ApiResponse.success("Search results for keyword: " + keyword, bookService.searchByKeyword(keyword)));
     }
 }

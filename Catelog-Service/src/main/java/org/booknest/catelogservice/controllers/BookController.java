@@ -2,8 +2,8 @@ package org.booknest.catelogservice.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.booknest.catelogservice.dto.AdminBookResponse;
 import org.booknest.catelogservice.dto.BookRequestDTO;
-import org.booknest.catelogservice.entity.Book;
 import org.booknest.catelogservice.model.ApiResponse;
 import org.booknest.catelogservice.services.BookService;
 import org.springframework.http.MediaType;
@@ -25,29 +25,29 @@ public class BookController {
 
     @Operation(summary = "Add a new book", description = "Allows administrators to add a new book listing with a cover image.")
     @PostMapping(value = "/books", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<Object>> addBook(@ModelAttribute BookRequestDTO bookRequestDTO) {
+    public ResponseEntity<ApiResponse<Void>> addBook(@ModelAttribute BookRequestDTO bookRequestDTO) {
         bookService.addBook(bookRequestDTO);
-        return ResponseEntity.ok(ApiResponse.success("SuccessFully added book",null));
+        return ResponseEntity.ok(ApiResponse.success("Successfully added book", null));
     }
 
-    @Operation(summary = "Get all books", description = "Retrieves a list of all books in the catalog.")
+    @Operation(summary = "Get all books (Admin)", description = "Retrieves a list of all books in the catalog with full details.")
     @GetMapping("/books")
-    public ResponseEntity<ApiResponse<List<Book>>> getAllBooks() {
-        List<Book> allBooks = bookService.AllAdminBooks();
-        return ResponseEntity.ok(ApiResponse.success("SuccessFully get all books", allBooks));
+    public ResponseEntity<ApiResponse<List<AdminBookResponse>>> getAllAdminBooks() {
+        List<AdminBookResponse> allBooks = bookService.AllAdminBooks();
+        return ResponseEntity.ok(ApiResponse.success("Successfully retrieved all books", allBooks));
     }
 
     @Operation(summary = "Update an existing book", description = "Updates details of an existing book by its ID.")
     @PatchMapping(value = "/books/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> updateBook(@PathVariable String id, @ModelAttribute BookRequestDTO bookRequestDTO) {
+    public ResponseEntity<ApiResponse<Void>> updateBook(@PathVariable Long id, @ModelAttribute BookRequestDTO bookRequestDTO) {
         bookService.updateBook(bookRequestDTO, id);
-        return ResponseEntity.ok(ApiResponse.success("Sucessfully Updated the book", null));
+        return ResponseEntity.ok(ApiResponse.success("Successfully updated the book", null));
     }
 
     @Operation(summary = "Delete a book", description = "Deletes a book from the catalog and its cover image from S3.")
     @DeleteMapping("/books/{id}")
-    public ResponseEntity<Object> deleteBook(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
-        return ResponseEntity.ok(ApiResponse.success("Successfully delete book", null));
+        return ResponseEntity.ok(ApiResponse.success("Successfully deleted book", null));
     }
 }

@@ -50,6 +50,5 @@ public class BookRequestDTO {
     @Schema(description = "Publication date", example = "1925-04-10")
     private LocalDate publishedDate;
 
-    @Schema(description = "Cover image file to upload")
     private MultipartFile coverImage;
 }

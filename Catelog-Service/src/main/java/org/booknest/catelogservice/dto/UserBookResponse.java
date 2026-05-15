@@ -1,6 +1,6 @@
-package org.booknest.catelogservice.entity;
+package org.booknest.catelogservice.dto;
 
-import jakarta.persistence.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,31 +9,21 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-@Entity
-@Table(name = "books")
-public class Book {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Schema(description = "Response object representing book details for end users")
+public class UserBookResponse {
     private Long id;
-
-    @Column(nullable = false)
     private String title;
-
-    @Column(nullable = false)
     private String author;
-
-    @Column(unique = true, nullable = false)
     private String isbn;
-
     private String genre;
     private String publisher;
     private double price;
     private double rating;
     private String description;
     private String coverImageUrl;
-    private String coverImageKey;
     private LocalDate publishedDate;
+    private Integer stock;
 }

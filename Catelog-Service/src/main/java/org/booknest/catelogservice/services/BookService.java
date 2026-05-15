@@ -1,13 +1,17 @@
 package org.booknest.catelogservice.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.booknest.catelogservice.dto.AdminBookResponse;
 import org.booknest.catelogservice.dto.BookRequestDTO;
+import org.booknest.catelogservice.dto.UserBookResponse;
 import org.booknest.catelogservice.entity.Book;
+import org.booknest.catelogservice.entity.Inventory;
 import org.booknest.catelogservice.exceptions.BookAlreadyExistsException;
 import org.booknest.catelogservice.exceptions.FileUploadException;
 import org.booknest.catelogservice.exceptions.ResourceNotFoundException;
-import org.booknest.catelogservice.model.UserBookResponse;
+import org.booknest.catelogservice.mapper.BookMapper;
 import org.booknest.catelogservice.repo.BookRepo;
+import org.booknest.catelogservice.repo.InventoryRepo;
 import org.booknest.catelogservice.utils.AwsUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +24,14 @@ public class BookService {
 
     private final AwsUtils awsUtils;
     private final BookRepo bookRepo;
+    private final InventoryRepo inventoryRepo;
+    private final BookMapper bookMapper;
 
-    public BookService(AwsUtils awsUtils, BookRepo bookRepo) {
+    public BookService(AwsUtils awsUtils, BookRepo bookRepo, InventoryRepo inventoryRepo, BookMapper bookMapper) {
         this.awsUtils = awsUtils;
         this.bookRepo = bookRepo;
+        this.inventoryRepo = inventoryRepo;
+        this.bookMapper = bookMapper;
     }
 
     /****************** Admin methods ***************************/
@@ -34,7 +42,7 @@ public class BookService {
 
         // 1. if book already no existed
         if (bookRepo.existsByIsbn(bookRequestDTO.getIsbn())) {
-            throw new BookAlreadyExistsException("Book with Title: " + bookRequestDTO.getTitle() + "and Isbn:" + bookRequestDTO.getIsbn() + " already exists");
+            throw new BookAlreadyExistsException("Book with Title: " + bookRequestDTO.getTitle() + " and Isbn: " + bookRequestDTO.getIsbn() + " already exists");
         }
 
         // 2. Upload image
@@ -52,7 +60,6 @@ public class BookService {
                 .genre(bookRequestDTO.getGenre())
                 .publisher(bookRequestDTO.getPublisher())
                 .price(bookRequestDTO.getPrice())
-                .stock(bookRequestDTO.getStocks())
                 .rating(bookRequestDTO.getRating())
                 .description(bookRequestDTO.getDescription())
                 .coverImageUrl(awsImageUrl)
@@ -61,13 +68,22 @@ public class BookService {
                 .build();
 
         // 4. saving in db
-        bookRepo.save(book);
+        Book savedBook = bookRepo.save(book);
+
+        // 5. Initialize inventory
+        Inventory inventory = Inventory.builder()
+                .book(savedBook)
+                .stock(bookRequestDTO.getStocks() != null ? bookRequestDTO.getStocks() : 0)
+                .status(bookRequestDTO.getStocks() != null && bookRequestDTO.getStocks() > 0 ? "AVAILABLE" : "OUT_OF_STOCK")
+                .lowStockThreshold(10)
+                .build();
+        inventoryRepo.save(inventory);
     }
 
-    public void updateBook(BookRequestDTO dto, String id) {
+    public void updateBook(BookRequestDTO dto, Long id) {
 
         //get that book from db
-        Book book = bookRepo.findBookById(id)
+        Book book = bookRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book with id: " + id + " not found"));
 
         if (dto.getTitle() != null) {
@@ -77,7 +93,11 @@ public class BookService {
             book.setPrice(dto.getPrice());
         }
         if (dto.getStocks() != null) {
-            book.setStock(dto.getStocks());
+            Inventory inventory = inventoryRepo.findByBookId(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for book id: " + id));
+            inventory.setStock(dto.getStocks());
+            inventory.setStatus(dto.getStocks() > 0 ? "AVAILABLE" : "OUT_OF_STOCK");
+            inventoryRepo.save(inventory);
         }
         if(dto.getCoverImage() != null) {
 
@@ -101,74 +121,85 @@ public class BookService {
         bookRepo.save(book);
     }
 
-    public void deleteBook(String id) {
+    public void deleteBook(Long id) {
 
-        Book book = bookRepo.findBookById(id)
+        Book book = bookRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book with id: " + id + " not found"));
 
             // 1. Delete image from S3
             if (book.getCoverImageKey() != null) {
                 awsUtils.deleteFromCloud(book.getCoverImageKey());
             }
-            // 2. Delete from DB
+            // 2. Delete inventory
+            inventoryRepo.findByBookId(id).ifPresent(inventoryRepo::delete);
+
+            // 3. Delete from DB
             bookRepo.delete(book);
     }
 
-    public List<Book> AllAdminBooks() {
-        return bookRepo.findAll();
-
+    public List<AdminBookResponse> AllAdminBooks() {
+        return bookRepo.findAll().stream()
+                .map(book -> {
+                    Integer stock = inventoryRepo.findByBookId(book.getId())
+                            .map(Inventory::getStock)
+                            .orElse(0);
+                    return bookMapper.toAdminResponse(book, stock);
+                })
+                .toList();
     }
 
 
     /****************** public  methods ***************************/
     public List<UserBookResponse> getAllBooks() {
-        List<Book> books = bookRepo.findAll();
-        return books.stream().map(this::mapToResponse).toList();
+        return bookRepo.findAll().stream()
+                .map(book -> {
+                    Integer stock = inventoryRepo.findByBookId(book.getId())
+                            .map(Inventory::getStock)
+                            .orElse(0);
+                    return bookMapper.toUserResponse(book, stock);
+                })
+                .toList();
     }
 
     public List<UserBookResponse> searchByTitle(String title) {
         return bookRepo.findByTitleContainingIgnoreCase(title).stream()
-                .map(this::mapToResponse)
+                .map(book -> {
+                    Integer stock = inventoryRepo.findByBookId(book.getId())
+                            .map(Inventory::getStock)
+                            .orElse(0);
+                    return bookMapper.toUserResponse(book, stock);
+                })
                 .toList();
     }
 
     public List<UserBookResponse> searchByAuthor(String author) {
         return bookRepo.findByAuthorContainingIgnoreCase(author).stream()
-                .map(this::mapToResponse)
+                .map(book -> {
+                    Integer stock = inventoryRepo.findByBookId(book.getId())
+                            .map(Inventory::getStock)
+                            .orElse(0);
+                    return bookMapper.toUserResponse(book, stock);
+                })
                 .toList();
     }
 
     public List<UserBookResponse> filterByGenre(String genre) {
         return bookRepo.findByGenreIgnoreCase(genre).stream()
-                .map(this::mapToResponse)
+                .map(book -> {
+                    Integer stock = inventoryRepo.findByBookId(book.getId())
+                            .map(Inventory::getStock)
+                            .orElse(0);
+                    return bookMapper.toUserResponse(book, stock);
+                })
                 .toList();
     }
 
-    public List<UserBookResponse> searchByKeyword(String keyword) {
-        return bookRepo.searchByKeyword(keyword).stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public UserBookResponse getBookById(String id) {
-        Book book = bookRepo.findBookById(id)
+    public UserBookResponse getBookById(Long id) {
+        Book book = bookRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book with id: " + id + " not found"));
-        return mapToResponse(book);
-    }
-
-    /****************** Utils methods ***************************/
-    private UserBookResponse mapToResponse(Book book) {
-        return UserBookResponse.builder()
-                .id(book.getId())
-                .title(book.getTitle())
-                .author(book.getAuthor())
-                .isbn(book.getIsbn())
-                .genre(book.getGenre())
-                .publisher(book.getPublisher())
-                .price(book.getPrice())
-                .description(book.getDescription())
-                .coverImageUrl(book.getCoverImageUrl())
-                .publishedDate(book.getPublishedDate())
-                .build();
+        Integer stock = inventoryRepo.findByBookId(id)
+                .map(Inventory::getStock)
+                .orElse(0);
+        return bookMapper.toUserResponse(book, stock);
     }
 }

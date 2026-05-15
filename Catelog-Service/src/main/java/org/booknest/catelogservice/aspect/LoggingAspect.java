@@ -2,12 +2,12 @@ package org.booknest.catelogservice.aspect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.*;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 
 @Aspect
 @Component
@@ -19,34 +19,29 @@ public class LoggingAspect {
 
         long start = System.currentTimeMillis();
 
-        String methodName = joinPoint.getSignature().getName();
-
-        //Get user info from SecurityContext (JWT)
-        String user = "ANONYMOUS";
-        String roles = "NONE";
+        String method = joinPoint.getSignature().toShortString();
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
-            user = auth.getName();
-            roles = auth.getAuthorities().toString();
-        }
 
-        log.info("➡️ [REQUEST] User={}||Roles={}",
-                user, roles);
+        String user = (auth != null) ? auth.getName() : "anonymous";
+
+        log.info("REQ  | user={} | {}", user, method);
 
         try {
             Object result = joinPoint.proceed();
 
-            long timeTaken = System.currentTimeMillis() - start;
+            log.info("RES  | {} | {} ms",
+                    method,
+                    System.currentTimeMillis() - start);
 
-            log.info("✅ [RESPONSE] {}|Time={}ms",
-                     methodName, timeTaken);
             return result;
 
         } catch (Exception ex) {
-            long timeTaken = System.currentTimeMillis() - start;
 
-            log.error("❌ [ERROR] |{} Time={}ms|Error={}",methodName, timeTaken, ex.getMessage());
+            log.error("ERR  | {} | {} ms | {}",
+                    method,
+                    System.currentTimeMillis() - start,
+                    ex.getMessage());
 
             throw ex;
         }
@@ -59,14 +54,25 @@ public class LoggingAspect {
 
         String method = joinPoint.getSignature().toShortString();
 
-        log.info("🔧 [SERVICE-START] || {} || Args={}", method, Arrays.toString(joinPoint.getArgs()));
+        log.debug("SERVICE START | {}", method);
 
-        Object result = joinPoint.proceed();
+        try {
+            Object result = joinPoint.proceed();
 
-        log.info("🔧 [SERVICE-END] || {} Time= || {}ms",
-                method, System.currentTimeMillis() - start);
+            log.debug("SERVICE END   | {} | {} ms",
+                    method,
+                    System.currentTimeMillis() - start);
 
-        return result;
+            return result;
+
+        } catch (Exception ex) {
+
+            log.error("SERVICE ERR   | {} | {}",
+                    method,
+                    ex.getMessage());
+
+            throw ex;
+        }
     }
 
     @Around("execution(* org.booknest.catelogservice.repo..*(..))")
@@ -76,14 +82,23 @@ public class LoggingAspect {
 
         String method = joinPoint.getSignature().toShortString();
 
-        log.debug("🗄️ [DB-CALL] {} || Args={}", method, Arrays.toString(joinPoint.getArgs()));
+        try {
+            Object result = joinPoint.proceed();
 
-        Object result = joinPoint.proceed();
+            log.debug("DB | {} | {} ms",
+                    method,
+                    System.currentTimeMillis() - start);
 
-        log.debug("🗄️ [DB-RESULT] {} || Time={}ms",
-                method, System.currentTimeMillis() - start);
+            return result;
 
-        return result;
+        } catch (Exception ex) {
+
+            log.error("DB ERR | {} | {}",
+                    method,
+                    ex.getMessage());
+
+            throw ex;
+        }
     }
 
     @Around("execution(* org.booknest.catelogservice.utils.AwsUtils.*(..))")
@@ -93,18 +108,21 @@ public class LoggingAspect {
 
         String method = joinPoint.getSignature().toShortString();
 
-        log.debug("🧩 [UTIL-START] {} Args={}", method, Arrays.toString(joinPoint.getArgs()));
-
         try {
             Object result = joinPoint.proceed();
 
-            log.debug("🧩 [UTIL-END] || {} || Time={}ms",
-                    method, System.currentTimeMillis() - start);
+            log.debug("UTIL | {} | {} ms",
+                    method,
+                    System.currentTimeMillis() - start);
 
             return result;
 
         } catch (Exception ex) {
-            log.error("🧩 [UTIL-ERROR] || {} || Error={}", method, ex.getMessage());
+
+            log.error("UTIL ERR | {} | {}",
+                    method,
+                    ex.getMessage());
+
             throw ex;
         }
     }
