@@ -1,0 +1,25 @@
+version: "2.0"
+
+services:
+  app:
+    build: .
+    image: ${DOCKER_USER}/payment-service:${IMAGE_TAG}
+    container_name: payment-app
+    networks:
+      - micro-net
+    restart: on-failure
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+
+      SPRING_STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      SPRING_STRIPE_WEBHOOK_KEY: ${STRIPE_WEBHOOK_KEY}
+
+      EUREKA_URL: ${EUREKA_URL}
+
+networks:
+  micro-net:
+    external: true

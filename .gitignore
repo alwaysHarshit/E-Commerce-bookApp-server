@@ -1,1 +1,7 @@
 .idea
+api-gateway/
+Auth-Service/
+cart-service/
+Catelog-Service/
+order-service/
+service-registry/

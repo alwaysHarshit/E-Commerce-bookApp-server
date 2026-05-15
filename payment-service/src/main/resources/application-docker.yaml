@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: payment-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        ddl-auto: update
+
+stripe:
+  secret-key: ${SPRING_STRIPE_SECRET_KEY}
+  webhook-secret: ${SPRING_STRIPE_WEBHOOK_KEY}
+
+server:
+  port: 8086
+  servlet:
+    context-path: /payment-service
+
+logging:
+  level:
+    org.booknest: debug
+    root: error
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
