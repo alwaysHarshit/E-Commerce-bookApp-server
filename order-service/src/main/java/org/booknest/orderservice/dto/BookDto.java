@@ -1,11 +1,11 @@
 package org.booknest.orderservice.dto;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class BookDto {
-    private Long bookId;
-    private String bookTitle;
-    private  double Price;
-    private int quantity;
+    private Long id;
+    private String title;
+    private String isbn;
+    private Double price;
 }

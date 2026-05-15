@@ -1,29 +1,28 @@
 package org.booknest.orderservice.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
+@Table(name = "order_items")
+@Getter
+@Setter
 @Builder
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItemEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long ItemId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private Long bookId;
     private String bookTitle;
-    private  double price;
-    private int quantity;
+    private String isbn; // Snapshot of book ISBN
+    private Double bookPrice; // Snapshot of price at purchase
+    private Integer quantity;
+    private Double subtotal; // bookPrice * quantity
 
-    @ManyToOne
-    @JoinColumn(name = "orderId")
-    private OrderEntity orderE;
-
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private OrderEntity order;
 }

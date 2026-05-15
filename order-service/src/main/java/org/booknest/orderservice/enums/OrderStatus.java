@@ -1,11 +1,9 @@
 package org.booknest.orderservice.enums;
 
-public enum OrderStatus{
+public enum OrderStatus {
     PENDING,
     CONFIRMED,
-    OUT_FOR_DELIVERY,
+    SHIPPED,
     DELIVERED,
-    CANCELLED,
-    RETURNED,
-    FAILED
+    CANCELLED
 }
