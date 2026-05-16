@@ -53,11 +53,14 @@ public class PaymentServiceImpl implements PaymentService {
 
             //save in db
             Payment save = paymentRepository.save(paymentEntity);
+
             return PaymentIntentResponseDto.builder()
                     .paymentId(save.getPaymentId())
                     .clientSecret(paymentIntent.getClientSecret())
                     .status(PaymentStatus.INITIATED)
                     .build();
+
+
         } catch (StripeException e) {
             throw new StripeExecption(e.getMessage());
         }

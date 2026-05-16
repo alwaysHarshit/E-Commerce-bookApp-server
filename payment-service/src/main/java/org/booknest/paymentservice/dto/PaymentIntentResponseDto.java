@@ -1,15 +1,14 @@
 package org.booknest.paymentservice.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.booknest.paymentservice.enums.PaymentStatus;
 
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PaymentIntentResponseDto {
-
 
     private Long paymentId;
     private String clientSecret;
