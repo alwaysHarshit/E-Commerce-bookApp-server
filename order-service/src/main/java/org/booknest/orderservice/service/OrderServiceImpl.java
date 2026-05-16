@@ -21,8 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
 
 
         /* call catalog service to fetch the book reques deatils */
-            BookDto book = catalogClient.getBookById(request.getBookId());
+            BookDto book = catalogClient.getBookById(request.getBookId()).getData();
 
             //call the catalog service to check whether sufficenet quanity is in stock or not
             boolean hasStock = catalogClient.checkStock(request.getBookId(), request.getQuantity());
@@ -129,7 +127,7 @@ public class OrderServiceImpl implements OrderService {
 
         //iterated over the cart items and build order item entities
         for (CartItemDto item : orderItems) {
-            BookDto book = catalogClient.getBookById(item.getBookId());
+            BookDto book = catalogClient.getBookById(item.getBookId()).getData();
             boolean hasStock = catalogClient.checkStock(item.getBookId(), item.getQuantity());
 
             if (!hasStock) {
