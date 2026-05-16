@@ -10,7 +10,7 @@ public class PaymentMapper {
    public PaymentResponseDto mapToPaymentReponse(Payment payment) {
 
         return PaymentResponseDto.builder()
-                .id(payment.getId())
+                .id(payment.getPaymentId())
                 .orderId(payment.getOrderId())
                 .paymentIntentId(payment.getPaymentIntentId())
                 .amount(payment.getAmount())
