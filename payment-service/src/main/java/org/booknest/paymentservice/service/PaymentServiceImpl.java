@@ -61,8 +61,6 @@ public class PaymentServiceImpl implements PaymentService {
         } catch (StripeException e) {
             throw new StripeExecption(e.getMessage());
         }
-
-        return paymentIntent.getClientSecret();
     }
 
 
