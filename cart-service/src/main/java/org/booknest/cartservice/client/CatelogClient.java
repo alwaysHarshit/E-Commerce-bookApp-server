@@ -9,11 +9,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(
-        name = "catelogClient",
-        url = "${catalog.service.url}",
-        configuration = FeignConfig.class
-)
+@FeignClient(name = "CATALOG-SERVICE")
 public interface CatelogClient {
 
     @GetMapping("/api/books/{bookid}")
