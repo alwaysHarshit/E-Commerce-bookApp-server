@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.booknest.paymentservice.dto.PaymentIntentResponseDto;
 import org.booknest.paymentservice.dto.PaymentRequestDto;
 import org.booknest.paymentservice.dto.PaymentResponseDto;
 import org.booknest.paymentservice.service.PaymentService;
@@ -27,8 +28,8 @@ public class PaymentController {
     @PostMapping("/create-intent")
     @Operation(summary = "Create a Payment Intent", description = "Creates a Stripe Payment Intent for a given order amount and currency.")
     @ApiResponse(responseCode = "200", description = "Payment Intent created successfully")
-    public ResponseEntity<String> createIntent(@RequestBody PaymentRequestDto paymentRequestDto) {
-        String paymentIntent = paymentService.createPaymentIntent(paymentRequestDto);
+    public ResponseEntity<PaymentIntentResponseDto> createIntent(@RequestBody PaymentRequestDto paymentRequestDto) {
+        PaymentIntentResponseDto paymentIntent = paymentService.createPaymentIntent(paymentRequestDto);
         return ResponseEntity.ok(paymentIntent);
     }
 

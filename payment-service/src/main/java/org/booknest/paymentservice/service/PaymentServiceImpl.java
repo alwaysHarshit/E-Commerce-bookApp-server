@@ -7,6 +7,7 @@ import com.stripe.net.Webhook;
 import com.stripe.param.PaymentIntentCreateParams;
 import lombok.extern.slf4j.Slf4j;
 import org.booknest.paymentservice.Client.OrderClient;
+import org.booknest.paymentservice.dto.PaymentIntentResponseDto;
 import org.booknest.paymentservice.dto.PaymentRequestDto;
 import org.booknest.paymentservice.dto.PaymentResponseDto;
 import org.booknest.paymentservice.dto.PaymentStatusUpdateRequest;
@@ -16,7 +17,6 @@ import org.booknest.paymentservice.execptions.PaymentObejctNotFound;
 import org.booknest.paymentservice.execptions.StripeExecption;
 import org.booknest.paymentservice.mapper.PaymentMapper;
 import org.booknest.paymentservice.repo.PaymentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +41,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public String createPaymentIntent(PaymentRequestDto paymentRequestDto) {
+    public PaymentIntentResponseDto createPaymentIntent(PaymentRequestDto paymentRequestDto) {
         PaymentIntentCreateParams build = PaymentIntentCreateParams.builder().setAmount((long) paymentRequestDto.getAmount() * 100).setCurrency(paymentRequestDto.getCurrency()).setAutomaticPaymentMethods(PaymentIntentCreateParams.AutomaticPaymentMethods.builder().setEnabled(true).build()).build();
 
         PaymentIntent paymentIntent;
@@ -52,8 +52,12 @@ public class PaymentServiceImpl implements PaymentService {
             Payment paymentEntity = Payment.builder().orderId(paymentRequestDto.getOrderId()).paymentIntentId(paymentIntent.getId()).amount(paymentRequestDto.getAmount()).currency(paymentRequestDto.getCurrency()).status(PaymentStatus.INITIATED).build();
 
             //save in db
-            paymentRepository.save(paymentEntity);
-
+            Payment save = paymentRepository.save(paymentEntity);
+            return PaymentIntentResponseDto.builder()
+                    .paymentId(save.getPaymentId())
+                    .clientSecret(paymentIntent.getClientSecret())
+                    .status(PaymentStatus.INITIATED)
+                    .build();
         } catch (StripeException e) {
             throw new StripeExecption(e.getMessage());
         }
