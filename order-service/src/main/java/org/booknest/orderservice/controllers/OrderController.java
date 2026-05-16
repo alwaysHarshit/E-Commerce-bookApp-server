@@ -3,7 +3,9 @@ package org.booknest.orderservice.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.booknest.orderservice.dto.OrderRequestDTO;
+import org.booknest.orderservice.dto.BuyNowRequestDto;
+import org.booknest.orderservice.dto.CheckoutCartRequestDto;
+import org.booknest.orderservice.dto.CheckoutResponseDto;
 import org.booknest.orderservice.dto.OrderResponseDTO;
 import org.booknest.orderservice.service.OrderService;
 import org.springframework.http.HttpStatus;
@@ -20,10 +22,17 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @PostMapping
-    @Operation(summary = "Create a new order", description = "Supports both 'Buy Now' and 'Checkout Cart' flows")
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO request) {
-        return new ResponseEntity<>(orderService.createOrder(request), HttpStatus.CREATED);
+    @PostMapping("/checkout/")
+    @Operation(summary = "Create a new order", description = "Supports both 'Buy Now")
+    public ResponseEntity<CheckoutResponseDto> createOrder(@RequestBody CheckoutCartRequestDto request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(orderService.checkoutCart(request));
+    }
+    @PostMapping("/checkout/buy-now")
+    @Operation(summary = "Buy a single book instantly")
+    public ResponseEntity<CheckoutResponseDto> buyNow(@RequestBody BuyNowRequestDto request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(orderService.buyNow(request));
     }
 
     @GetMapping("/my")

@@ -31,4 +31,8 @@ public class GlobalExceptionHandler {
         error.put("message", "Internal Server Error: " + ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<PaymentException> handlePayment(PaymentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ex);
+    }
 }

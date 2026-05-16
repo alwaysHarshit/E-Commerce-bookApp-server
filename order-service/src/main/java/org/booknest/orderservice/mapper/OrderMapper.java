@@ -13,21 +13,17 @@ public class OrderMapper {
 
     public OrderResponseDTO toResponseDTO(OrderEntity order) {
         return OrderResponseDTO.builder()
-                .id(order.getId())
+                .orderId(order.getId())
                 .userId(order.getUserId())
                 .totalAmount(order.getTotalAmount())
                 .addressId(order.getShippingAddressId())
-                .paymentMethod(order.getPaymentMethod())
+                .paymentType(order.getPaymentType())
                 .paymentStatus(order.getPaymentStatus())
                 .orderStatus(order.getOrderStatus())
-                .paymentIntentId(order.getPaymentIntentId())
-                .transactionId(order.getTransactionId())
-                .paidAt(order.getPaidAt())
-                .paidAmount(order.getPaidAmount())
-                .createdAt(order.getCreatedAt())
                 .items(order.getItems().stream()
                         .map(this::toItemResponseDTO)
                         .collect(Collectors.toList()))
+                .createdAt(order.getCreatedAt())
                 .build();
     }
 

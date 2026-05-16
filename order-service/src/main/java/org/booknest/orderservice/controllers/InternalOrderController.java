@@ -32,9 +32,7 @@ public class InternalOrderController {
 
     @PutMapping("/{orderId}/payment-status")
     @Operation(summary = "Update order payment status", description = "Called by Payment Service to update status based on Stripe events")
-    public ResponseEntity<Void> updatePaymentStatus(
-            @PathVariable Long orderId,
-            @RequestBody PaymentStatusUpdateRequest request) {
+    public ResponseEntity<Void> updatePaymentStatus(@PathVariable Long orderId, @RequestBody PaymentStatusUpdateRequest request) {
         orderService.updatePaymentStatus(orderId, request);
         return ResponseEntity.ok().build();
     }

@@ -8,29 +8,17 @@ import org.booknest.orderservice.enums.OrderStatus;
 import org.booknest.orderservice.enums.PaymentStatus;
 import org.booknest.orderservice.enums.PaymentType;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderResponseDTO {
+public class CheckoutResponseDto {
 
     private Long orderId;
-
-    private Long userId;
-
-    private Double totalAmount;
-
-    private Long addressId;
-
-    private PaymentType paymentType;
-
-    private PaymentStatus paymentStatus;
-
     private OrderStatus orderStatus;
-
-    private LocalDateTime createdAt;
-
-    private List<OrderItemResponseDTO> items;
+    private PaymentStatus paymentStatus;
+    private String clientSecret;
 }

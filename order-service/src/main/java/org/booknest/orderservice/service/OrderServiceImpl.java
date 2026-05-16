@@ -1,21 +1,21 @@
 package org.booknest.orderservice.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.booknest.orderservice.client.BookClient;
-import org.booknest.orderservice.client.InventoryClient;
+import org.booknest.orderservice.client.CartClient;
+import org.booknest.orderservice.client.CatalogClient;
 import org.booknest.orderservice.client.PaymentClient;
+import org.booknest.orderservice.dto.BookDto;
 import org.booknest.orderservice.dto.*;
 import org.booknest.orderservice.entity.OrderEntity;
 import org.booknest.orderservice.entity.OrderItemEntity;
 import org.booknest.orderservice.enums.OrderStatus;
 import org.booknest.orderservice.enums.PaymentStatus;
 import org.booknest.orderservice.exception.InsufficientStockException;
+import org.booknest.orderservice.exception.PaymentException;
 import org.booknest.orderservice.exception.ResourceNotFoundException;
 import org.booknest.orderservice.mapper.OrderMapper;
 import org.booknest.orderservice.repo.OrderRepo;
-import org.booknest.orderservice.utils.JwtUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,85 +34,174 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepo orderRepo;
     private final OrderMapper orderMapper;
-    private final BookClient bookClient;
-    private final InventoryClient inventoryClient;
+    private final CatalogClient catalogClient;
     private final PaymentClient paymentClient;
+    private final CartClient cartClient;
 
 
-private Long getCurrentUserId() {
+    private Long getCurrentUserId() {
     String userId = SecurityContextHolder.getContext().getAuthentication().getName();
     return Long.parseLong(userId);
 }
 
 
     @Override
-    @Transactional
-    public OrderResponseDTO createOrder(OrderRequestDTO request) {
-        Long userId = getCurrentUserId();
-        List<OrderItemEntity> orderItems = new ArrayList<>();
-        double totalAmount = 0;
+    public CheckoutResponseDto buyNow(BuyNowRequestDto request) {
 
-        for (OrderItemDTO itemDto : request.getItems()) {
-            BookDto book = bookClient.getBookById(itemDto.getBookId());
-            boolean hasStock = inventoryClient.checkStock(itemDto.getBookId(), itemDto.getQuantity());
-            if (!hasStock) {
-                throw new InsufficientStockException("Stock unavailable for book: " + book.getTitle());
-            }
 
+        /* call catalog service to fetch the book reques deatils */
+            BookDto book = catalogClient.getBookById(request.getBookId());
+
+            //call the catalog service to check whether sufficenet quanity is in stock or not
+            boolean hasStock = catalogClient.checkStock(request.getBookId(), request.getQuantity());
+
+            if (!hasStock) throw new InsufficientStockException("Stock unavailable for book: " + book.getTitle());
+
+            //create the orderItem entity
             OrderItemEntity item = OrderItemEntity.builder()
                     .bookId(book.getId())
                     .bookTitle(book.getTitle())
                     .isbn(book.getIsbn())
                     .bookPrice(book.getPrice())
-                    .quantity(itemDto.getQuantity())
-                    .subtotal(book.getPrice() * itemDto.getQuantity())
+                    .quantity(request.getQuantity())
+                    .subtotal(book.getPrice() * request.getQuantity())
                     .build();
-            
-            orderItems.add(item);
-            totalAmount += item.getSubtotal();
-        }
 
-        // 1. Save Order with PENDING_PAYMENT status first to get an ID
-        OrderEntity order = OrderEntity.builder()
-                .userId(userId)
-                .totalAmount(totalAmount)
-                .shippingAddressId(request.getAddressId())
-                .paymentMethod(request.getPaymentMethod())
-                .paymentStatus(PaymentStatus.INITIATED)
-                .orderStatus(OrderStatus.PENDING_PAYMENT)
-                .build();
+            //create the order enity
+            OrderEntity newOrder = OrderEntity.builder()
+                    .userId(getCurrentUserId())
+                    .totalAmount(item.getSubtotal())
+                    .shippingAddressId(request.getAddressId())
+                    .orderStatus(OrderStatus.PENDING_PAYMENT)
+                    .paymentType(request.getPaymentMethod())
+                    .items(List.of(item))
+                    .build();
 
-        for (OrderItemEntity item : orderItems) {
-            item.setOrder(order);
-        }
-        order.setItems(orderItems);
+            item.setOrder(newOrder);
 
-        OrderEntity savedOrder = orderRepo.save(order);
-
-        // 2. Initiate Payment (Stripe Intent creation via Payment Service)
-        PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
-                .orderId(savedOrder.getId())
-                .amount(totalAmount)
-                .currency("usd") // Default currency
-                .build();
+            // saving the order entity in db
+            OrderEntity createdOrder = orderRepo.save(newOrder);
 
         try {
-            PaymentResponseDto paymentResponse = paymentClient.createPaymentIntent(paymentRequest);
-            savedOrder.setPaymentId(paymentResponse.getId());
-            savedOrder.setPaymentIntentId(paymentResponse.getPaymentIntentId());
-            orderRepo.save(savedOrder);
-            log.info("Payment intent created for Order ID: {}. PaymentIntentId: {}", savedOrder.getId(), paymentResponse.getPaymentIntentId());
-        } catch (Exception e) {
-            log.error("Failed to initiate payment for Order ID: {}", savedOrder.getId(), e);
-            // Optionally handle rollback or mark as failed
+            //call the payment service to create payment intent
+            //creating payement request
+            PaymentRequestDto build = PaymentRequestDto.builder()
+                    .orderId(createdOrder.getId())
+                    .amount(createdOrder.getTotalAmount())
+                    .currency("inr").build();
+
+            PaymentResponseDto paymentIntent = paymentClient.createPaymentIntent(build);
+
+            //update db state with payment realted info
+            createdOrder.setPaymentId(paymentIntent.getPaymentId());
+            createdOrder.setPaymentStatus(paymentIntent.getStatus());
+            orderRepo.save(createdOrder);
+
+            //call catalog service to reduce the inventory
+            catalogClient.reduceStock(createdOrder.getId(), request.getQuantity());
+
+            //bulding checkout response and return
+            return CheckoutResponseDto.builder()
+                    .orderId(createdOrder.getId())
+                    .orderStatus(newOrder.getOrderStatus())
+                    .paymentStatus(paymentIntent.getStatus())
+                    .clientSecret(paymentIntent.getClientSecret())
+                    .build();
+
+        }
+        catch (Exception e) {
+            createdOrder.setOrderStatus(OrderStatus.CANCELLED);
+            orderRepo.save(createdOrder);
+            throw new PaymentException("Payment service unavailable");
         }
 
-        // 3. Reduce Inventory (Reservations)
-        for (OrderItemDTO itemDto : request.getItems()) {
-            inventoryClient.reduceStock(itemDto.getBookId(), itemDto.getQuantity());
+
+    }
+
+    @Override
+    public CheckoutResponseDto checkoutCart(CheckoutCartRequestDto request) {
+
+        //call the cart service to get the cart
+        List<CartItemDto> orderItems = cartClient.getCart(request.getCartId()).getItems();
+
+        double totalAmount = 0;
+        List<OrderItemEntity> orderItemEntities = new ArrayList<>();
+
+        //iterated over the cart items and build order item entities
+        for (CartItemDto item : orderItems) {
+            BookDto book = catalogClient.getBookById(item.getBookId());
+            boolean hasStock = catalogClient.checkStock(item.getBookId(), item.getQuantity());
+
+            if (!hasStock) {
+                throw new InsufficientStockException("Stock unavailable for book: " + book.getTitle());
+            }
+
+            OrderItemEntity newOrderItem = OrderItemEntity.builder()
+                    .bookId(book.getId())
+                    .bookTitle(book.getTitle())
+                    .isbn(book.getIsbn())
+                    .bookPrice(book.getPrice())
+                    .quantity(item.getQuantity())
+                    .subtotal(book.getPrice() * item.getQuantity())
+                    .build();
+
+            orderItemEntities.add(newOrderItem);
+            totalAmount+=item.getQuantity()* book.getPrice();
         }
 
-        return orderMapper.toResponseDTO(savedOrder);
+        //create the order enity
+        OrderEntity newOrder = OrderEntity.builder()
+                .userId(getCurrentUserId())
+                .totalAmount(totalAmount)
+                .shippingAddressId(request.getAddressId())
+                .orderStatus(OrderStatus.PENDING_PAYMENT)
+                .paymentType(request.getPaymentMethod())
+                .items(orderItemEntities)
+                .build();
+
+
+        for (OrderItemEntity cartItem : orderItemEntities) {
+            cartItem.setOrder(newOrder);
+        }
+
+        // saving the order entity in db
+        OrderEntity createdOrder = orderRepo.save(newOrder);
+
+
+        try {
+            //call the payment service to create payment intent
+            //creating payement request
+            PaymentRequestDto build = PaymentRequestDto.builder()
+                    .orderId(createdOrder.getId())
+                    .amount(createdOrder.getTotalAmount())
+                    .currency("inr").build();
+
+            PaymentResponseDto paymentIntent = paymentClient.createPaymentIntent(build);
+
+            //update db state with payment realted info
+            createdOrder.setPaymentId(paymentIntent.getPaymentId());
+            createdOrder.setPaymentStatus(paymentIntent.getStatus());
+            orderRepo.save(createdOrder);
+
+            //call catalog service to reduce the inventory
+            for (CartItemDto orderItem : orderItems) {
+                catalogClient.reduceStock(orderItem.getBookId(), orderItem.getQuantity());
+            }
+
+            //bulding checkout response and return
+            return CheckoutResponseDto.builder()
+                    .orderId(createdOrder.getId())
+                    .orderStatus(newOrder.getOrderStatus())
+                    .paymentStatus(paymentIntent.getStatus())
+                    .clientSecret(paymentIntent.getClientSecret())
+                    .build();
+
+        }
+        catch (Exception e) {
+            createdOrder.setOrderStatus(OrderStatus.CANCELLED);
+            orderRepo.save(createdOrder);
+            throw new PaymentException("Payment service unavailable");
+        }
     }
 
     @Override
@@ -145,12 +234,15 @@ private Long getCurrentUserId() {
         
         if (newStatus == PaymentStatus.SUCCESS) {
             order.setOrderStatus(OrderStatus.CONFIRMED);
-            order.setPaidAt(request.getPaymentTime() != null ? request.getPaymentTime() : LocalDateTime.now());
             log.info("Payment SUCCESS for order {}. Status updated to CONFIRMED.", orderId);
-        } else if (newStatus == PaymentStatus.FAILED) {
+        }
+        else if (newStatus == PaymentStatus.FAILED) {
             log.error("Payment FAILED for order {}.", orderId);
-            // In a real app, we might want to keep it in PENDING_PAYMENT or CANCEL
-        } else if (newStatus == PaymentStatus.CANCELED) {
+            order.setPaymentStatus(newStatus);
+            order.setOrderStatus(OrderStatus.CANCELLED);
+            log.info("Payment FAILED for order {}. Status updated to CANCELLED.", orderId);
+        }
+        else if (newStatus == PaymentStatus.CANCELED) {
             order.setOrderStatus(OrderStatus.CANCELLED);
             restoreInventory(order);
             log.info("Payment CANCELED for order {}. Status updated to CANCELLED.", orderId);
@@ -158,6 +250,7 @@ private Long getCurrentUserId() {
 
         orderRepo.save(order);
     }
+
 
     private void validatePaymentTransition(OrderEntity order, PaymentStatus newStatus) {
         if (order.getOrderStatus() == OrderStatus.DELIVERED) {
@@ -172,7 +265,7 @@ private Long getCurrentUserId() {
         log.info("Restoring inventory for order {}", order.getId());
         for (OrderItemEntity item : order.getItems()) {
             try {
-                inventoryClient.restoreStock(item.getBookId(), item.getQuantity());
+                catalogClient.restoreStock(item.getBookId(), item.getQuantity());
             } catch (Exception e) {
                 log.error("Failed to restore stock for book {} in order {}", item.getBookId(), order.getId(), e);
             }

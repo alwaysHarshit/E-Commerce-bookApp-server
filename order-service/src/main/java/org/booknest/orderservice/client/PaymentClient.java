@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "PAYMENT-SERVICE")
 public interface PaymentClient {
 
-    @PostMapping("/api/payments/create-intent")
+    @PostMapping("/payment-service/api/payments/create-intent")
     PaymentResponseDto createPaymentIntent(@RequestBody PaymentRequestDto request);
 }
