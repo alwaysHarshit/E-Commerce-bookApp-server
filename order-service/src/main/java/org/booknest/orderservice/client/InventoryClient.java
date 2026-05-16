@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "CATALOG-SERVICE",contextId = "inventoryClient")
 public interface InventoryClient {
 
-    @PutMapping("/catalog-service/api/inventory/reduce")
+    @PutMapping("/api/inventory/reduce")
     void reduceStock(@RequestParam Long bookId, @RequestParam Integer quantity);
 
-    @PutMapping("/catalog-service/api/inventory/restore")
+    @PutMapping("/api/inventory/restore")
     void restoreStock(@RequestParam Long bookId, @RequestParam Integer quantity);
     
-    @GetMapping("/catalog-service/api/inventory/check")
+    @GetMapping("/api/inventory/check")
     boolean checkStock(@RequestParam Long bookId, @RequestParam Integer quantity);
 }

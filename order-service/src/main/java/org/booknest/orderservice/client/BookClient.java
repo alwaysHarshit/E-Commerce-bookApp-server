@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "CATALOG-SERVICE",contextId = "bookClient")
 public interface BookClient {
-    @GetMapping("/catalog-service/api/books/{id}")
+    @GetMapping("/api/books/{id}")
     BookDto getBookById(@PathVariable Long id);
 }
