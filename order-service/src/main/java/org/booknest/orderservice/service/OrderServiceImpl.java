@@ -90,6 +90,8 @@ public class OrderServiceImpl implements OrderService {
 
             PaymentResponseDto paymentIntent = paymentClient.createPaymentIntent(build);
 
+            log.info("Payment Intent: {}", paymentIntent);
+
             //update db state with payment realted info
             createdOrder.setPaymentId(paymentIntent.getPaymentId());
             createdOrder.setPaymentStatus(paymentIntent.getStatus());
