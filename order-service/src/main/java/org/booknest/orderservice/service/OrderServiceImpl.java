@@ -86,7 +86,8 @@ public class OrderServiceImpl implements OrderService {
             PaymentRequestDto build = PaymentRequestDto.builder()
                     .orderId(createdOrder.getId())
                     .amount(createdOrder.getTotalAmount())
-                    .currency("inr").build();
+                    .currency("inr")
+                    .build();
 
             PaymentResponseDto paymentIntent = paymentClient.createPaymentIntent(build);
 
@@ -98,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
             orderRepo.save(createdOrder);
 
             //call catalog service to reduce the inventory
-            catalogClient.reduceStock(createdOrder.getId(), request.getQuantity());
+            catalogClient.reduceStock(request.getBookId(), request.getQuantity());
 
             //bulding checkout response and return
             return CheckoutResponseDto.builder()
@@ -110,9 +111,14 @@ public class OrderServiceImpl implements OrderService {
 
         }
         catch (Exception e) {
+
+            log.error("Checkout failed", e);
+
             createdOrder.setOrderStatus(OrderStatus.CANCELLED);
+
             orderRepo.save(createdOrder);
-            throw new PaymentException("Payment service unavailable");
+
+            throw e;
         }
 
 
