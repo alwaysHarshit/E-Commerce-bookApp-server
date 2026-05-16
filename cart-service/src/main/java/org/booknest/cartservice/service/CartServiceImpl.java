@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.booknest.cartservice.client.CatelogClient;
 import org.booknest.cartservice.entity.Cart;
 import org.booknest.cartservice.entity.CartItem;
+import org.booknest.cartservice.exception.CartNotFound;
 import org.booknest.cartservice.model.BookResponse;
 import org.booknest.cartservice.repo.CartRepository;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,12 @@ public class CartServiceImpl implements CartService {
                     return cartRepo.save(build);
 
                 });
+    }
+
+    @Override
+    public Cart getCartByCartId(Long cartId) {
+        return cartRepo.findByCartId(cartId)
+                .orElseThrow(()-> new CartNotFound("cart with cart id "+cartId+" not found"));
     }
 
     @Override
@@ -150,4 +157,6 @@ public class CartServiceImpl implements CartService {
     public List<Cart> getAllCarts() {
         return cartRepo.findAll();
     }
+
+
 }

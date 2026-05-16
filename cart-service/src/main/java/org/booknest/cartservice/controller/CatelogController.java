@@ -15,27 +15,30 @@ import java.util.List;
 @RequestMapping("/cart")
 @Tag(name = "Cart Controller", description = "Endpoints for managing the shopping cart")
 public class CatelogController {
-    @Autowired
-    private CartServiceImpl cartService;
 
-    @GetMapping("/getBook/{bookId}")
+    private final CartServiceImpl cartService;
+
+    public CatelogController(CartServiceImpl cartService) {
+        this.cartService = cartService;
+    }
+
+    @PostMapping("/{bookId}")
     @Operation(summary = "Add a book to the cart", description = "Adds a book to the user's cart by its ID")
     public ResponseEntity<Cart> addNewBook(@PathVariable String bookId){
         Cart cart = cartService.addItem(getUserId(), bookId);
         return ResponseEntity.ok(cart);
     }
 
-    @DeleteMapping("/delete/{bookId}")
+    @DeleteMapping("/{bookId}")
     @Operation(summary = "Remove a book from the cart", description = "Removes a book from the user's cart by its ID")
     public ResponseEntity<Cart> delete(@PathVariable String bookId) {
         Cart cart = cartService.removeItem(getUserId(), bookId);
         return ResponseEntity.ok(cart);
     }
 
-    @PatchMapping("/update/{bookId}")
+    @PatchMapping("/{bookId}")
     @Operation(summary = "Update book quantity", description = "Updates the quantity of a specific book in the user's cart")
     public ResponseEntity<Cart> updateQuantity(@PathVariable String bookId, @RequestParam(name = "quantity") int quantity) {
-
         Cart updatedCart = cartService.updateQuantity(getUserId(), bookId, quantity);
         return ResponseEntity.ok(updatedCart);
     }
@@ -52,6 +55,11 @@ public class CatelogController {
     @Operation(summary = "Get all carts", description = "Retrieves all carts in the system (Admin only/Internal use)")
     public ResponseEntity<List<Cart>> getAllCarts() {
         return ResponseEntity.ok(cartService.getAllCarts());
+    }
+
+    @GetMapping("/{cartId}")
+    public ResponseEntity<Cart> getCart(@PathVariable Long cartId) {
+        return ResponseEntity.ok(cartService.getCartByCartId(cartId));
     }
 
     //helper method
