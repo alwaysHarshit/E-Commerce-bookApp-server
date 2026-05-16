@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Component
 public interface OrderClient {
 
-    @PutMapping( "/order-service/api/internal/orders/{orderId}/payment-status")
+    @PutMapping( "/api/internal/orders/{orderId}/payment-status")
     void updatePaymentStatus(@PathVariable Long orderId, @RequestBody PaymentStatusUpdateRequest request);
 }
