@@ -66,16 +66,18 @@ public class OrderServiceImpl implements OrderService {
                     .build();
 
             //create the order enity
-            OrderEntity newOrder = OrderEntity.builder()
-                    .userId(getCurrentUserId())
-                    .totalAmount(item.getSubtotal())
-                    .shippingAddressId(request.getAddressId())
-                    .orderStatus(OrderStatus.PENDING_PAYMENT)
-                    .paymentType(request.getPaymentMethod())
-                    .items(List.of(item))
-                    .build();
+        OrderEntity newOrder = OrderEntity.builder()
+                .userId(getCurrentUserId())
+                .totalAmount(item.getSubtotal())
+                .shippingAddressId(request.getAddressId())
+                .orderStatus(OrderStatus.PENDING_PAYMENT)
+                .paymentType(request.getPaymentMethod())
+                .items(new ArrayList<>())
+                .build();
 
-            item.setOrder(newOrder);
+        newOrder.getItems().add(item);
+
+        item.setOrder(newOrder);
 
             // saving the order entity in db
             OrderEntity createdOrder = orderRepo.save(newOrder);
