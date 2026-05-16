@@ -13,5 +13,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface CatelogClient {
 
     @GetMapping("/catalog-service/api/books/{id}")
-    ApiResponse<BookResponse> getBook(@PathVariable String bookid);
+    ApiResponse<BookResponse> getBook(@PathVariable("id") String bookid);
 }
