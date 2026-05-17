@@ -17,7 +17,7 @@ spring:
         ddl-auto: update
 
 server:
-  port: 8083
+  port: 8084
   servlet:
     context-path: /order-service
 

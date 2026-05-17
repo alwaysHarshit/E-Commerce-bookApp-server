@@ -91,7 +91,7 @@ public class OrderServiceImpl implements OrderService {
                     .currency("inr")
                     .build();
 
-            PaymentResponseDto paymentIntent = paymentClient.createPaymentIntent(build);
+            PaymentIntentResponseDto paymentIntent = paymentClient.createPaymentIntent(build);
 
             log.info("Payment Intent: {}", paymentIntent);
 
@@ -184,7 +184,7 @@ public class OrderServiceImpl implements OrderService {
                     .amount(createdOrder.getTotalAmount())
                     .currency("inr").build();
 
-            PaymentResponseDto paymentIntent = paymentClient.createPaymentIntent(build);
+            PaymentIntentResponseDto paymentIntent = paymentClient.createPaymentIntent(build);
 
             //update db state with payment realted info
             createdOrder.setPaymentId(paymentIntent.getPaymentId());
@@ -227,15 +227,22 @@ public class OrderServiceImpl implements OrderService {
 
         // Validate state transition
         validatePaymentTransition(order, request.getStatus());
-        OrderStatus initialStatus = order.getOrderStatus();
+        PaymentStatus initialStatus = order.getPaymentStatus();
         order.setPaymentStatus(request.getStatus());
+        
+        // Transition order status to CONFIRMED if payment is successful
+        if (request.getStatus() == PaymentStatus.SUCCESS) {
+            order.setOrderStatus(OrderStatus.CONFIRMED);
+        }
+        
         orderRepo.save(order);
 
         return String.format(
-                "Order %d. Payment status updated from %s to %s",
+                "Order %d. Payment status updated from %s to %s. Order status is now %s",
                 orderId,
                 initialStatus,
-                request.getStatus()
+                request.getStatus(),
+                order.getOrderStatus()
         );
     }
 

@@ -88,16 +88,4 @@ public class OrderController {
                 )
         );
     }
-
-    @PutMapping("/{orderId}/payment-status")
-    @Operation(summary = "Update order payment status", description = "Called by Payment Service to update status based on Stripe events")
-    public ResponseEntity<ApiResponse<String>> updatePaymentStatus(@PathVariable Long orderId, @RequestBody PaymentStatusUpdateRequest request) {
-
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "",
-                        orderService.updatePaymentStatus(orderId, request)
-                )
-        );
-    }
 }
