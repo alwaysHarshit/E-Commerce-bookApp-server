@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.booknest.orderservice.enums.PaymentStatus;
 
 import java.time.LocalDateTime;
 
@@ -12,11 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Data Transfer Object for updating payment status")
+
 public class PaymentStatusUpdateRequest {
-    @Schema(description = "New status of the payment", example = "SUCCESS")
-    private String paymentStatus;
-    
-    @Schema(description = "Time when the payment status was updated")
-    private LocalDateTime paymentTime;
+    private PaymentStatus status;
 }

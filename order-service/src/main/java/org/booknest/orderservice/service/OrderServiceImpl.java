@@ -214,70 +214,29 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void updatePaymentStatus(Long orderId, PaymentStatusUpdateRequest request) {
-        log.info("Updating payment status for Order ID: {} to {}", orderId, request.getPaymentStatus());
+    public String updatePaymentStatus(Long orderId, PaymentStatusUpdateRequest request) {
+        log.info("Updating payment status for Order ID: {} to {}", orderId, request.getStatus());
         
         OrderEntity order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
 
         // Idempotency check: if order is already paid, ignore duplicate updates
         if (order.getPaymentStatus() == PaymentStatus.SUCCESS) {
-            log.warn("Order {} is already marked as SUCCESS. Skipping duplicate update.", orderId);
-            return;
-        }
-
-        // Map String status to Enum
-        PaymentStatus newStatus;
-        try {
-            newStatus = PaymentStatus.valueOf(request.getPaymentStatus().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid payment status received: {}", request.getPaymentStatus());
-            return;
+            return String.format("Order ID %d is already marked as SUCCESS", orderId);
         }
 
         // Validate state transition
-        validatePaymentTransition(order, newStatus);
-
-        order.setPaymentStatus(newStatus);
-        
-        if (newStatus == PaymentStatus.SUCCESS) {
-            order.setOrderStatus(OrderStatus.CONFIRMED);
-            log.info("Payment SUCCESS for order {}. Status updated to CONFIRMED.", orderId);
-        }
-        else if (newStatus == PaymentStatus.FAILED) {
-            log.error("Payment FAILED for order {}.", orderId);
-            order.setPaymentStatus(newStatus);
-            order.setOrderStatus(OrderStatus.CANCELLED);
-            log.info("Payment FAILED for order {}. Status updated to CANCELLED.", orderId);
-        }
-        else if (newStatus == PaymentStatus.CANCELED) {
-            order.setOrderStatus(OrderStatus.CANCELLED);
-            restoreInventory(order);
-            log.info("Payment CANCELED for order {}. Status updated to CANCELLED.", orderId);
-        }
-
+        validatePaymentTransition(order, request.getStatus());
+        OrderStatus initialStatus = order.getOrderStatus();
+        order.setPaymentStatus(request.getStatus());
         orderRepo.save(order);
-    }
 
-
-    private void validatePaymentTransition(OrderEntity order, PaymentStatus newStatus) {
-        if (order.getOrderStatus() == OrderStatus.DELIVERED) {
-            throw new IllegalStateException("Cannot update payment for an already DELIVERED order");
-        }
-        if (order.getOrderStatus() == OrderStatus.CANCELLED && newStatus == PaymentStatus.SUCCESS) {
-            throw new IllegalStateException("Cannot pay for a CANCELLED order");
-        }
-    }
-
-    private void restoreInventory(OrderEntity order) {
-        log.info("Restoring inventory for order {}", order.getId());
-        for (OrderItemEntity item : order.getItems()) {
-            try {
-                catalogClient.restoreStock(item.getBookId(), item.getQuantity());
-            } catch (Exception e) {
-                log.error("Failed to restore stock for book {} in order {}", item.getBookId(), order.getId(), e);
-            }
-        }
+        return String.format(
+                "Order %d. Payment status updated from %s to %s",
+                orderId,
+                initialStatus,
+                request.getStatus()
+        );
     }
 
     @Override
@@ -300,7 +259,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponseDTO cancelOrder(Long orderId) {
+    public void cancelOrder(Long orderId) {
         OrderEntity order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -311,10 +270,9 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderStatus(OrderStatus.CANCELLED);
         order.setPaymentStatus(PaymentStatus.CANCELED);
-        
         restoreInventory(order);
-
-        return orderMapper.toResponseDTO(orderRepo.save(order));
+        orderRepo.save(order);
+        return;
     }
 
     @Override
@@ -324,16 +282,45 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponseDTO updateOrderStatus(Long orderId, OrderStatus status) {
+    public String updateOrderStatus(Long orderId, UpdateOrderStatusRequest request) {
         OrderEntity order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        log.info("Updating order status for {} from {} to {}", orderId, order.getOrderStatus(), status);
-        order.setOrderStatus(status);
-        return orderMapper.toResponseDTO(orderRepo.save(order));
+
+        OrderStatus initialStatus = order.getOrderStatus();
+        order.setOrderStatus(request.getStatus());
+        orderRepo.save(order);
+
+        return String.format(
+                "Order %d. Order status updated from %s to %s",
+                orderId,
+                initialStatus,
+                request.getStatus()
+        );
     }
 
     @Override
     public boolean hasPurchased(Long userId, Long bookId) {
         return orderRepo.existsByUserIdAndOrderStatusAndItems_BookId(userId, OrderStatus.DELIVERED, bookId);
+    }
+
+    /******************************** Helper Method *************************************************************/
+    private void validatePaymentTransition(OrderEntity order, PaymentStatus newStatus) {
+        if (order.getOrderStatus() == OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Cannot update payment for an already DELIVERED order");
+        }
+        if (order.getOrderStatus() == OrderStatus.CANCELLED && newStatus == PaymentStatus.SUCCESS) {
+            throw new IllegalStateException("Cannot pay for a CANCELLED order");
+        }
+    }
+
+    private void restoreInventory(OrderEntity order) {
+        log.info("Restoring inventory for order {}", order.getId());
+        for (OrderItemEntity item : order.getItems()) {
+            try {
+                catalogClient.restoreStock(item.getBookId(), item.getQuantity());
+            } catch (Exception e) {
+                log.error("Failed to restore stock for book {} in order {}", item.getBookId(), order.getId(), e);
+            }
+        }
     }
 }
