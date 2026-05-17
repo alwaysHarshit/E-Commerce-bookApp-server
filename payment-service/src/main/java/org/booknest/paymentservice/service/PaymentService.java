@@ -4,8 +4,7 @@ import org.booknest.paymentservice.dto.PaymentIntentResponseDto;
 import org.booknest.paymentservice.dto.PaymentRequestDto;
 import org.booknest.paymentservice.dto.PaymentResponseDto;
 import org.springframework.data.domain.Page;
-
-import java.awt.print.Pageable;
+import org.springframework.data.domain.Pageable;
 
 public interface PaymentService {
 
