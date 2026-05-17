@@ -9,8 +9,11 @@ import org.booknest.paymentservice.dto.PaymentIntentResponseDto;
 import org.booknest.paymentservice.dto.PaymentRequestDto;
 import org.booknest.paymentservice.dto.PaymentResponseDto;
 import org.booknest.paymentservice.service.PaymentService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.awt.print.Pageable;
 
 @Slf4j
 @RestController
@@ -36,9 +39,7 @@ public class PaymentController {
     @PostMapping("/webhook")
     @Operation(summary = "Handle Stripe Webhook", description = "Handles asynchronous events from Stripe (e.g., payment success/failure).")
     @ApiResponse(responseCode = "200", description = "Webhook handled successfully")
-    public ResponseEntity<String> handleStripeWebhook(
-            @RequestBody String payload,
-            @Parameter(description = "Stripe-Signature header for validation") @RequestHeader("Stripe-Signature") String sigHeader) {
+    public ResponseEntity<String> handleStripeWebhook(@RequestBody String payload, @Parameter(description = "Stripe-Signature header for validation") @RequestHeader("Stripe-Signature") String sigHeader) {
         String s = paymentService.handleStripeWebhook(payload, sigHeader);
         return ResponseEntity.ok(s);
     }
@@ -47,16 +48,19 @@ public class PaymentController {
     @Operation(summary = "Get Payment by Order ID", description = "Retrieves payment details for a specific order.")
     @ApiResponse(responseCode = "200", description = "Payment details found")
     @ApiResponse(responseCode = "404", description = "Payment not found for the given order ID")
-    public ResponseEntity<PaymentResponseDto> getPaymentByOrderId(
-            @Parameter(description = "ID of the order") @PathVariable Long orderId) {
+    public ResponseEntity<PaymentResponseDto> getPaymentByOrderId(@Parameter(description = "ID of the order") @PathVariable Long orderId) {
         return ResponseEntity.ok(paymentService.getPaymentByOrderId(orderId));
     }
 
     @PostMapping("/cancel/{paymentIntentId}")
     @Operation(summary = "Cancel Payment", description = "Cancels a Stripe Payment Intent.")
     @ApiResponse(responseCode = "200", description = "Payment cancelled successfully")
-    public ResponseEntity<String> cancelPayment(
-            @Parameter(description = "Stripe Payment Intent ID") @PathVariable String paymentIntentId) {
+    public ResponseEntity<String> cancelPayment(@Parameter(description = "Stripe Payment Intent ID") @PathVariable String paymentIntentId) {
         return ResponseEntity.ok(paymentService.cancelPayment(paymentIntentId));
+    }
+
+    @GetMapping("/all-payments")
+    public ResponseEntity<Page<PaymentResponseDto>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(paymentService.getAllPayments(pageable));
     }
 }

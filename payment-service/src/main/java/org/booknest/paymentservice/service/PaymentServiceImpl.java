@@ -18,9 +18,10 @@ import org.booknest.paymentservice.execptions.StripeExecption;
 import org.booknest.paymentservice.mapper.PaymentMapper;
 import org.booknest.paymentservice.repo.PaymentRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.awt.print.Pageable;
 
 @Slf4j
 @Service
@@ -92,8 +93,8 @@ public class PaymentServiceImpl implements PaymentService {
 
                     orderClient.updatePaymentStatus(
                             paymentEnity.getOrderId(),
-                            new PaymentStatusUpdateRequest(PaymentStatus.SUCCESS.name(), LocalDateTime.now()
-                            )
+                            new PaymentStatusUpdateRequest(PaymentStatus.SUCCESS)
+
                     );
 
 
@@ -106,8 +107,7 @@ public class PaymentServiceImpl implements PaymentService {
                     // call the order service to update about failer
                     orderClient.updatePaymentStatus(
                             paymentEnity.getOrderId(),
-                            new PaymentStatusUpdateRequest(PaymentStatus.FAILED.name(),LocalDateTime.now()
-                            )
+                            new PaymentStatusUpdateRequest(PaymentStatus.FAILED)
                     );
                     break;
 
@@ -156,8 +156,7 @@ public class PaymentServiceImpl implements PaymentService {
             //call the order service
             orderClient.updatePaymentStatus(
                     paymentEnity.getOrderId(),
-                    new PaymentStatusUpdateRequest(PaymentStatus.CANCELED.name(), LocalDateTime.now()
-                    )
+                    new PaymentStatusUpdateRequest(PaymentStatus.CANCELED)
             );
 
             return "Payment cancelled successfully";
@@ -166,5 +165,10 @@ public class PaymentServiceImpl implements PaymentService {
         catch (StripeException e) {
             throw new StripeExecption("Failed to cancel payment : " + e.getMessage());
         }
+    }
+
+    @Override
+    public Page<PaymentResponseDto> getAllPayments(Pageable pageable) {
+        return paymentRepository.findAll(pageable).map(paymentMapper::mapToPaymentReponse);
     }
 }
