@@ -12,7 +12,6 @@ public interface OrderService {
 
     CheckoutResponseDto buyNow(BuyNowRequestDto request);
     CheckoutResponseDto checkoutCart(CheckoutCartRequestDto request);
-
     List<OrderResponseDTO> getMyOrders();
     OrderResponseDTO getOrderDetails(Long orderId);
     OrderResponseDTO cancelOrder(Long orderId);
@@ -23,9 +22,6 @@ public interface OrderService {
     
     // Internal API
     boolean hasPurchased(Long userId, Long bookId);
-
-
-
     void updatePaymentStatus(Long orderId, PaymentStatusUpdateRequest request);
 
 

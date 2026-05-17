@@ -4,12 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.booknest.orderservice.dto.PaymentStatusUpdateRequest;
+import org.booknest.orderservice.model.ApiResponse;
 import org.booknest.orderservice.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/internal/orders")
@@ -21,13 +19,11 @@ public class InternalOrderController {
 
     @GetMapping("/has-purchased")
     @Operation(summary = "Check if user has purchased a book", description = "Returns true only if the user has a DELIVERED order containing the book")
-    public ResponseEntity<Map<String, Boolean>> hasPurchased(
+    public ResponseEntity<ApiResponse<Boolean>> hasPurchased(
             @RequestParam Long userId, 
             @RequestParam Long bookId) {
         boolean purchased = orderService.hasPurchased(userId, bookId);
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("purchased", purchased);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Successfully checked purchase", purchased));
     }
 
     @PutMapping("/{orderId}/payment-status")

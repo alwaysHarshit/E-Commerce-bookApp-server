@@ -327,7 +327,6 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDTO updateOrderStatus(Long orderId, OrderStatus status) {
         OrderEntity order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        
         log.info("Updating order status for {} from {} to {}", orderId, order.getOrderStatus(), status);
         order.setOrderStatus(status);
         return orderMapper.toResponseDTO(orderRepo.save(order));

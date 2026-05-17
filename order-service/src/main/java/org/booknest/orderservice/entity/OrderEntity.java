@@ -1,5 +1,6 @@
 package org.booknest.orderservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.booknest.orderservice.enums.OrderStatus;
@@ -50,6 +51,7 @@ public class OrderEntity {
             orphanRemoval = true)
 
     @Builder.Default
+    @JsonBackReference
     private List<OrderItemEntity> items = new ArrayList<>();
 
     @CreationTimestamp

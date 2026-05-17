@@ -7,6 +7,7 @@ import org.booknest.orderservice.dto.BuyNowRequestDto;
 import org.booknest.orderservice.dto.CheckoutCartRequestDto;
 import org.booknest.orderservice.dto.CheckoutResponseDto;
 import org.booknest.orderservice.dto.OrderResponseDTO;
+import org.booknest.orderservice.model.ApiResponse;
 import org.booknest.orderservice.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,19 +38,38 @@ public class OrderController {
 
     @GetMapping("/my")
     @Operation(summary = "Get current user's orders")
-    public ResponseEntity<List<OrderResponseDTO>> getMyOrders() {
-        return ResponseEntity.ok(orderService.getMyOrders());
+    public ResponseEntity<ApiResponse<List<OrderResponseDTO>>> getMyOrders() {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Orders fetched successfully",
+                        orderService.getMyOrders()
+                )
+        );
     }
 
     @GetMapping("/{orderId}")
     @Operation(summary = "Get single order details", description = "User can only access their own orders")
-    public ResponseEntity<OrderResponseDTO> getOrderDetails(@PathVariable Long orderId) {
-        return ResponseEntity.ok(orderService.getOrderDetails(orderId));
+    public ResponseEntity<ApiResponse<OrderResponseDTO>> getOrderDetails(
+            @PathVariable Long orderId) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Order details fetched successfully",
+                        orderService.getOrderDetails(orderId)
+                )
+        );
     }
 
     @PutMapping("/{orderId}/cancel")
     @Operation(summary = "Cancel an order", description = "Only allowed if order is not shipped or delivered")
-    public ResponseEntity<OrderResponseDTO> cancelOrder(@PathVariable Long orderId) {
-        return ResponseEntity.ok(orderService.cancelOrder(orderId));
+    public ResponseEntity<ApiResponse<OrderResponseDTO>> cancelOrder(
+            @PathVariable Long orderId) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Order cancelled successfully",
+                        orderService.cancelOrder(orderId)
+                )
+        );
     }
 }

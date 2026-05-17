@@ -14,6 +14,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class OrderResponseDTO {
 
     private Long orderId;

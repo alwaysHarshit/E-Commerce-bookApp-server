@@ -1,5 +1,6 @@
 package org.booknest.orderservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,5 +25,6 @@ public class OrderItemEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
+    @JsonBackReference
     private OrderEntity order;
 }
