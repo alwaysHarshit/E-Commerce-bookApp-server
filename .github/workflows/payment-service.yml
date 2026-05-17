@@ -1,4 +1,4 @@
-name: Deploy catalog-serice
+name: Deploy payment-serice
 
 on:
   push:
