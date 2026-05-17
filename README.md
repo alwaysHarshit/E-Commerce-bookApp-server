@@ -142,7 +142,7 @@ The Payment Service acts as a client to the **Order Service** using Feign.
 
 ### 7.1 Application Configuration (`application.yaml`)
 - **App Name:** `payment-service`
-- **Port:** `8086`
+- **Port:** `8085`
 - **Context Path:** `/payment-service`
 - **Database:** MySQL (`jdbc:mysql://localhost:3306/ecommerce`)
 - **JPA:** `hibernate.ddl-auto: update`

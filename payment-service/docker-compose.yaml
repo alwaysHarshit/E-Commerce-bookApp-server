@@ -5,6 +5,8 @@ services:
     build: .
     image: ${DOCKER_USER}/payment-service:${IMAGE_TAG}
     container_name: payment-app
+    expose:
+      - 8085
     networks:
       - micro-net
     restart: on-failure

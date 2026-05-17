@@ -21,7 +21,7 @@ stripe:
   webhook-secret: ${SPRING_STRIPE_WEBHOOK_KEY}
 
 server:
-  port: 8086
+  port: 8085
   servlet:
     context-path: /payment-service
 
