@@ -1,0 +1,62 @@
+name: Deploy payment-serice
+
+on:
+  push:
+    branches:
+      - feature/payment-service
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: login to docker hub
+        run:  echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USER }}/payment-service:${{ github.sha }} ./payment-service
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USER }}/payment-service:${{ github.sha }}
+
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          source: "payment-service/docker-compose.yaml"
+          target: "/home/ubuntu/"
+
+      #  Step 6: Deploy using docker-compose
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            mkdir -p /home/ubuntu
+            cd /home/ubuntu/payment-service
+
+            cat <<EOF > .env
+            DOCKER_USER=${{ secrets.DOCKER_USER }}
+            IMAGE_TAG=${{ github.sha }}
+
+            DB_URL=${{ secrets.PAYMENT_DB_URL }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASS=${{ secrets.DB_PASS }}
+            
+            STRIPE_SECRET_KEY= ${{secrets.STRIPE_SECRET_KEY}}
+            STRIPE_WEBHOOK_KEY= ${{secrets.STRIPE_WEBHOOK_KEY}}
+            
+            EUREKA_URL=${{ secrets.EUREKA_URL }}
+            EOF
+
+            docker compose down || true
+            docker compose pull
+            docker compose up -d        
+                      
