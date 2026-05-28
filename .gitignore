@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 .idea
 .mvn
 target/
@@ -6,3 +5,4 @@ mvnw
 mvnw.cmd
 mvn.xml
 out/
+

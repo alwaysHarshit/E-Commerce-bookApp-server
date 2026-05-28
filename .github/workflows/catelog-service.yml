@@ -1,0 +1,66 @@
+name: Deploy catalog-serice
+
+on:
+  push:
+    branches:
+      - feature/catalog-service
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: login to docker hub
+        run:  echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USER }}/catalog-service:${{ github.sha }} ./Catelog-Service
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USER }}/catalog-service:${{ github.sha }}
+
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          source: "Catelog-Service/docker-compose.yml"
+          target: "/home/ubuntu/"
+
+      #  Step 6: Deploy using docker-compose
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            mkdir -p /home/ubuntu
+            cd /home/ubuntu/Catelog-Service
+
+            cat <<EOF > .env
+            DOCKER_USER=${{ secrets.DOCKER_USER }}
+            IMAGE_TAG=${{ github.sha }}
+
+            DB_URL=${{ secrets.CATELOG_DB_URL }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASS=${{ secrets.DB_PASS }}
+            
+          
+            AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+            AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+            AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }}
+            AWS_REGION_NAME=${{ secrets.AWS_REGION_NAME }}
+
+            EUREKA_URL=${{ secrets.EUREKA_URL }}
+            EOF
+
+            docker compose down || true
+            docker compose pull
+            docker compose up -d        
+                      
+                      
