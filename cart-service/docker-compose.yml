@@ -1,0 +1,22 @@
+services:
+  app:
+    build: .
+    image: ${DOCKER_USER}/cart-service:${IMAGE_TAG}
+    container_name: cart-app
+    expose:
+      - 8083
+    networks:
+      - micro-net
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+      EUREKA_URL: ${EUREKA_URL}
+
+    restart: always
+
+networks:
+  micro-net:
+    external: true
