@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    image: ${DOCKER_USER}/auth-service:${IMAGE_TAG}
+    container_name: auth-app
+
+    networks:
+      - micro-net
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: ${USER_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+      EUREKA_URL: ${EUREKA_URL}
+      GITHUB_CLIENT_ID: ${GIT_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GIT_CLIENT_PASSWORD}
+
+networks:
+  micro-net:
+    external: true
